@@ -161,7 +161,13 @@ export const VirtualGanttChart: React.FC<VirtualGanttChartProps> = ({
   };
 
   return (
-    <Paper sx={{ overflow: 'hidden', height: '100%', position: 'relative' }}>
+    <Paper sx={{ 
+      overflow: 'hidden', 
+      height: '100%', 
+      position: 'relative',
+      background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+    }}>
       {/* ズームコントロール */}
       <Box sx={{ 
         position: 'absolute', 
@@ -171,12 +177,19 @@ export const VirtualGanttChart: React.FC<VirtualGanttChartProps> = ({
         display: 'flex',
         alignItems: 'center',
         gap: 1,
-        backgroundColor: 'background.paper',
-        borderRadius: 1,
-        boxShadow: 2,
-        p: 0.5
+        background: 'linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%)',
+        borderRadius: 2,
+        boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
+        border: '1px solid rgba(0,0,0,0.08)',
+        p: 1
       }}>
-        <Typography variant="caption" sx={{ px: 1 }}>
+        <Typography variant="caption" sx={{ 
+          px: 1,
+          fontWeight: 'bold',
+          color: 'primary.main',
+          minWidth: 40,
+          textAlign: 'center',
+        }}>
           {Math.round(zoomLevel * 100)}%
         </Typography>
         <Tooltip title="ズームアウト">
@@ -202,25 +215,28 @@ export const VirtualGanttChart: React.FC<VirtualGanttChartProps> = ({
         bottom: 16,
         right: 16,
         zIndex: 10,
-        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        background: 'linear-gradient(135deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.6) 100%)',
         color: 'white',
-        borderRadius: 1,
+        borderRadius: 2,
         px: 2,
-        py: 1,
+        py: 1.5,
         fontSize: '0.75rem',
+        fontWeight: 'medium',
+        backdropFilter: 'blur(8px)',
+        border: '1px solid rgba(255,255,255,0.1)',
       }}>
-        Ctrl + マウスホイール / Ctrl + ±キーでズーム
+        🔍 Ctrl + マウスホイール / Ctrl + ±キーでズーム
       </Box>
 
       <Box sx={{ display: 'flex', height: '100%' }}>
         {/* タスクリスト（左側） */}
         <Box sx={{ 
           width: 300, 
-          borderRight: 1, 
-          borderColor: 'divider', 
+          borderRight: '2px solid rgba(0,0,0,0.08)', 
           overflow: 'auto',
-          backgroundColor: 'background.paper',
+          background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)',
           zIndex: 2,
+          boxShadow: '2px 0 8px rgba(0,0,0,0.05)',
         }}>
           <TaskList 
             tasks={visibleTasks} 
@@ -268,7 +284,7 @@ export const VirtualGanttChart: React.FC<VirtualGanttChartProps> = ({
               position: 'relative', 
               minHeight: visibleTasks.length * rowHeight,
               width: totalDays * dayWidth,
-              backgroundColor: 'background.default',
+              background: 'linear-gradient(90deg, #ffffff 0%, #f8fafc 50%, #ffffff 100%)',
             }}
           >
             {/* 今日の線 */}
@@ -279,14 +295,26 @@ export const VirtualGanttChart: React.FC<VirtualGanttChartProps> = ({
                 return (
                   <Box sx={{
                     position: 'absolute',
-                    left: todayOffset * dayWidth + dayWidth / 2,
+                    left: todayOffset * dayWidth + dayWidth / 2 - 1,
                     top: 0,
                     bottom: 0,
-                    width: 2,
-                    backgroundColor: 'error.main',
+                    width: 3,
+                    background: 'linear-gradient(180deg, #ef4444 0%, #dc2626 100%)',
                     zIndex: 3,
-                    opacity: 0.8,
+                    boxShadow: '0 0 8px rgba(239, 68, 68, 0.5)',
                     pointerEvents: 'none',
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      top: 0,
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      width: 8,
+                      height: 8,
+                      backgroundColor: '#ef4444',
+                      borderRadius: '50%',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                    }
                   }} />
                 );
               }
@@ -309,10 +337,11 @@ export const VirtualGanttChart: React.FC<VirtualGanttChartProps> = ({
                     top: 0,
                     bottom: 0,
                     width: dayWidth,
-                    backgroundColor: 'grey.100',
-                    opacity: 0.5,
+                    background: 'linear-gradient(180deg, rgba(148, 163, 184, 0.15) 0%, rgba(148, 163, 184, 0.25) 100%)',
                     zIndex: 0,
                     pointerEvents: 'none',
+                    borderLeft: '1px solid rgba(148, 163, 184, 0.2)',
+                    borderRight: '1px solid rgba(148, 163, 184, 0.2)',
                   }}
                 />
               );
@@ -328,8 +357,7 @@ export const VirtualGanttChart: React.FC<VirtualGanttChartProps> = ({
                   top: 0,
                   bottom: 0,
                   width: 1,
-                  backgroundColor: 'divider',
-                  opacity: 0.5,
+                  background: 'linear-gradient(180deg, rgba(148, 163, 184, 0.3) 0%, rgba(148, 163, 184, 0.6) 100%)',
                   zIndex: 1,
                   pointerEvents: 'none',
                 }}

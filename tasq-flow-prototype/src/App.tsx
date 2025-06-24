@@ -72,6 +72,12 @@ function App() {
     setTeamSidebarOpen(false);
   };
 
+  const handleHomeSelect = () => {
+    setSelectedTeamId(undefined);
+    setSelectedProjectId(undefined);
+    setProjectSidebarOpen(false);
+  };
+
   const handleViewModeChange = (mode: ViewMode) => {
     setViewMode(mode);
   };
@@ -143,7 +149,9 @@ function App() {
           open={teamSidebarOpen}
           width={teamSidebarWidth}
           selectedTeamId={selectedTeamId}
+          selectedView={selectedView}
           onTeamSelect={handleTeamSelect}
+          onHomeSelect={handleHomeSelect}
           onClose={handleTeamSidebarClose}
         />
         

@@ -88,35 +88,52 @@ export const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
           width: width,
           boxSizing: 'border-box',
           left: leftSidebarWidth,
-          backgroundColor: 'background.paper',
+          background: 'linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%)',
+          borderRight: '1px solid rgba(0,0,0,0.08)',
+          boxShadow: '2px 0 8px rgba(0,0,0,0.05)',
         },
       }}
     >
       <Toolbar />
       <Box sx={{ overflow: 'auto', height: '100%' }}>
         <Box sx={{ 
-          p: 2, 
-          borderBottom: 1, 
-          borderColor: 'divider',
+          p: 2.5,
+          background: team ? `linear-gradient(135deg, ${team.color}15 0%, ${team.color}25 100%)` : 'grey.50',
+          borderBottom: `3px solid ${team?.color || '#e0e0e0'}`,
           display: 'flex',
           alignItems: 'center',
-          gap: 1
+          gap: 1.5
         }}>
           {team && (
             <>
               <Avatar
                 sx={{
-                  width: 24,
-                  height: 24,
+                  width: 32,
+                  height: 32,
                   bgcolor: team.color,
-                  fontSize: '0.75rem',
+                  fontSize: '0.9rem',
+                  fontWeight: 'bold',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
                 }}
               >
                 {team.name.charAt(0)}
               </Avatar>
-              <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-                {team.name}
-              </Typography>
+              <Box>
+                <Typography variant="subtitle1" sx={{ 
+                  fontWeight: 'bold',
+                  fontSize: '1rem',
+                  color: team.color,
+                  lineHeight: 1.2,
+                }}>
+                  {team.name}
+                </Typography>
+                <Typography variant="caption" sx={{ 
+                  color: 'text.secondary',
+                  fontSize: '0.75rem',
+                }}>
+                  📁 プロジェクト一覧
+                </Typography>
+              </Box>
             </>
           )}
         </Box>
@@ -138,18 +155,40 @@ export const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
                       }
                     }}
                     sx={{
-                      borderRadius: 1,
+                      borderRadius: 2,
                       mx: 1,
                       my: 0.5,
+                      minHeight: 80,
+                      background: selectedProjectId === project.id 
+                        ? `linear-gradient(135deg, ${project.color || team?.color}20 0%, ${project.color || team?.color}35 100%)`
+                        : 'transparent',
+                      borderLeft: selectedProjectId === project.id 
+                        ? `4px solid ${project.color || team?.color}` 
+                        : `2px solid transparent`,
+                      '&:hover': {
+                        backgroundColor: selectedProjectId === project.id 
+                          ? `${project.color || team?.color}25`
+                          : 'action.hover',
+                        transform: 'translateX(2px)',
+                      },
+                      transition: 'all 0.3s ease',
+                      boxShadow: selectedProjectId === project.id 
+                        ? '0 2px 12px rgba(0,0,0,0.1)' 
+                        : '0 1px 3px rgba(0,0,0,0.05)',
                     }}
                   >
                     <ListItemIcon>
                       <Avatar
                         sx={{
-                          width: 32,
-                          height: 32,
+                          width: 40,
+                          height: 40,
                           bgcolor: project.color || team?.color,
-                          fontSize: '0.875rem',
+                          fontSize: '1rem',
+                          fontWeight: 'bold',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                          border: selectedProjectId === project.id 
+                            ? '2px solid rgba(255,255,255,0.8)' 
+                            : '1px solid rgba(255,255,255,0.5)',
                         }}
                       >
                         {project.name.charAt(0)}
@@ -157,7 +196,14 @@ export const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
                     </ListItemIcon>
                     <ListItemText
                       primary={
-                        <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                        <Typography variant="body2" sx={{ 
+                          fontWeight: 'bold',
+                          fontSize: '0.95rem',
+                          color: selectedProjectId === project.id 
+                            ? project.color || team?.color 
+                            : 'inherit',
+                          lineHeight: 1.3,
+                        }}>
                           {project.name}
                         </Typography>
                       }
@@ -168,26 +214,45 @@ export const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
                               label={getStatusLabel(project.status)}
                               size="small"
                               sx={{
-                                height: 16,
-                                fontSize: '0.65rem',
+                                height: 18,
+                                fontSize: '0.7rem',
                                 bgcolor: getStatusColor(project.status),
                                 color: 'white',
+                                fontWeight: 'bold',
                               }}
                             />
                             <Chip
                               label={`${project.tasks.length}タスク`}
                               size="small"
                               variant="outlined"
-                              sx={{ height: 16, fontSize: '0.65rem' }}
+                              sx={{ 
+                                height: 18, 
+                                fontSize: '0.7rem',
+                                borderColor: project.color || team?.color,
+                                color: project.color || team?.color,
+                              }}
                             />
                           </Box>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <LinearProgress
                               variant="determinate"
                               value={project.progress}
-                              sx={{ flex: 1, height: 4, borderRadius: 2 }}
+                              sx={{ 
+                                flex: 1, 
+                                height: 6, 
+                                borderRadius: 3,
+                                backgroundColor: 'rgba(0,0,0,0.1)',
+                                '& .MuiLinearProgress-bar': {
+                                  backgroundColor: project.color || team?.color,
+                                  borderRadius: 3,
+                                }
+                              }}
                             />
-                            <Typography variant="caption" sx={{ minWidth: 30 }}>
+                            <Typography variant="caption" sx={{ 
+                              minWidth: 35,
+                              fontWeight: 'bold',
+                              color: project.color || team?.color,
+                            }}>
                               {project.progress}%
                             </Typography>
                           </Box>
