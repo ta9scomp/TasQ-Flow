@@ -33,7 +33,7 @@ import {
   Divider,
   Fab,
 } from '@mui/material';
-import Grid2 from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 
 import {
   ExpandMore as ExpandMoreIcon,
@@ -349,17 +349,17 @@ export const TodoTab: React.FC<TodoTabProps> = ({ tasks = sampleTasks }) => {
 
       {/* 統計情報 */}
       <Collapse in={showStats}>
-        <Grid2 container spacing={2} sx={{ mb: 3 }}>
-          <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+        <Grid container spacing={2} sx={{ mb: 3 }}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Card>
               <CardContent sx={{ textAlign: 'center' }}>
                 <Typography variant="h3" color="primary">{statsData.total}</Typography>
                 <Typography variant="body2" color="text.secondary">総タスク数</Typography>
               </CardContent>
             </Card>
-          </Grid2>
+          </Grid>
           
-          <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Card>
               <CardContent sx={{ textAlign: 'center' }}>
                 <Typography variant="h3" color="success.main">{statsData.completed}</Typography>
@@ -373,27 +373,27 @@ export const TodoTab: React.FC<TodoTabProps> = ({ tasks = sampleTasks }) => {
                 <Typography variant="caption">{statsData.completedPercentage}%</Typography>
               </CardContent>
             </Card>
-          </Grid2>
+          </Grid>
           
-          <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Card>
               <CardContent sx={{ textAlign: 'center' }}>
                 <Typography variant="h3" color="warning.main">{statsData.inProgress}</Typography>
                 <Typography variant="body2" color="text.secondary">進行中</Typography>
               </CardContent>
             </Card>
-          </Grid2>
+          </Grid>
           
-          <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Card>
               <CardContent sx={{ textAlign: 'center' }}>
                 <Typography variant="h3" color="error.main">{statsData.overdue}</Typography>
                 <Typography variant="body2" color="text.secondary">期限超過</Typography>
               </CardContent>
             </Card>
-          </Grid2>
+          </Grid>
           
-          <Grid2 size={12}>
+          <Grid size={{ xs: 12 }}>
             <Card>
               <CardHeader title="チェックリスト進捗" />
               <CardContent>
@@ -412,8 +412,8 @@ export const TodoTab: React.FC<TodoTabProps> = ({ tasks = sampleTasks }) => {
                 </Box>
               </CardContent>
             </Card>
-          </Grid2>
-        </Grid2>
+          </Grid>
+        </Grid>
       </Collapse>
 
       {/* フィルター・検索バー */}

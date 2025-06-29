@@ -50,8 +50,8 @@ export const useWebSocket = (options: UseWebSocketOptions) => {
 
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectCountRef = useRef(0);
-  const reconnectTimeoutRef = useRef<number | null>(null);
-  const heartbeatIntervalRef = useRef<number | null>(null);
+  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const heartbeatIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // メッセージ送信
   const sendMessage = useCallback((message: Partial<WebSocketMessage>) => {

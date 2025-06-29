@@ -35,7 +35,7 @@ import { VirtualGanttChart } from '../GanttChart/VirtualGanttChart';
 import { ProjectNavigation } from '../ProjectTeam/ProjectNavigation';
 import { sampleHolidays, sampleEvents } from '../../data/sampleCalendarData';
 import { addDays } from 'date-fns';
-import type { Project, Task } from '../../types/task';
+import type { Task } from '../../types/task';
 import type { ViewMode } from '../ProjectTeam/ProjectNavigation';
 
 interface IntegratedProjectViewProps {

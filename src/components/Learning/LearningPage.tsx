@@ -4,7 +4,6 @@ import {
   Paper,
   Typography,
   Button,
-  Container,
   Tabs,
   Tab,
   Card,
@@ -18,6 +17,7 @@ import {
   DialogActions,
   TextField,
 } from '@mui/material';
+import { LearningGuideViewer } from './LearningGuideViewer';
 import {
   ArrowBack as ArrowBackIcon,
   School as SchoolIcon,
@@ -32,6 +32,7 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   DragIndicator as DragIcon,
+  StickyNote2 as StickyIcon,
 } from '@mui/icons-material';
 
 interface LearningItem {
@@ -40,7 +41,7 @@ interface LearningItem {
   description: string;
   difficulty: 1 | 2 | 3 | 4 | 5;
   estimatedTime: string;
-  icon: React.ReactNode;
+  iconType?: 'code' | 'palette' | 'type' | 'state' | 'component' | 'error' | 'sticky' | 'book';
   filePath: string;
   completed?: boolean;
 }
@@ -51,6 +52,22 @@ interface LearningPageProps {
 
 export const LearningPage: React.FC<LearningPageProps> = ({ onBackToChart }) => {
   const [selectedTab, setSelectedTab] = React.useState(0);
+  const [selectedGuide, setSelectedGuide] = React.useState<LearningItem | null>(null);
+  
+  // アイコンタイプからReactNodeを取得
+  const getIconFromType = (iconType?: string): React.ReactNode => {
+    switch (iconType) {
+      case 'code': return <CodeIcon />;
+      case 'palette': return <PaletteIcon />;
+      case 'type': return <TypeIcon />;
+      case 'state': return <StateIcon />;
+      case 'component': return <ComponentIcon />;
+      case 'error': return <ErrorIcon />;
+      case 'sticky': return <StickyIcon />;
+      case 'book': 
+      default: return <BookIcon />;
+    }
+  };
   const [learningItems, setLearningItems] = React.useState<LearningItem[]>([
     {
       id: 'react-basics',
@@ -58,7 +75,7 @@ export const LearningPage: React.FC<LearningPageProps> = ({ onBackToChart }) => 
       description: 'コンポーネント、JSX、状態管理の基本を学ぶ',
       difficulty: 2,
       estimatedTime: '4-5時間',
-      icon: <CodeIcon />,
+      iconType: 'code',
       filePath: '/docs/learning-guides/React-Basics-Learning-Guide.md'
     },
     {
@@ -67,7 +84,7 @@ export const LearningPage: React.FC<LearningPageProps> = ({ onBackToChart }) => 
       description: 'Reactでのスタイリング方法とMaterial-UIの使い方',
       difficulty: 2,
       estimatedTime: '3-4時間',
-      icon: <PaletteIcon />,
+      iconType: 'palette',
       filePath: '/docs/learning-guides/CSS-Styling-Learning-Guide.md'
     },
     {
@@ -76,7 +93,7 @@ export const LearningPage: React.FC<LearningPageProps> = ({ onBackToChart }) => 
       description: '型安全なJavaScriptの書き方',
       difficulty: 3,
       estimatedTime: '3-4時間',
-      icon: <TypeIcon />,
+      iconType: 'type',
       filePath: '/docs/learning-guides/TypeScript-Learning-Guide.md'
     },
     {
@@ -85,7 +102,7 @@ export const LearningPage: React.FC<LearningPageProps> = ({ onBackToChart }) => 
       description: 'Zustandを使ったグローバル状態管理',
       difficulty: 3,
       estimatedTime: '2-3時間',
-      icon: <StateIcon />,
+      iconType: 'state',
       filePath: '/docs/learning-guides/State-Management-Learning-Guide.md'
     },
     {
@@ -94,7 +111,7 @@ export const LearningPage: React.FC<LearningPageProps> = ({ onBackToChart }) => 
       description: '再利用可能なコンポーネントの設計原則',
       difficulty: 4,
       estimatedTime: '4-5時間',
-      icon: <ComponentIcon />,
+      iconType: 'component',
       filePath: '/docs/learning-guides/Component-Design-Learning-Guide.md'
     },
     {
@@ -103,8 +120,44 @@ export const LearningPage: React.FC<LearningPageProps> = ({ onBackToChart }) => 
       description: 'エラーの適切な処理方法',
       difficulty: 3,
       estimatedTime: '2-3時間',
-      icon: <ErrorIcon />,
+      iconType: 'error',
       filePath: '/docs/learning-guides/Error-Handling-Learning-Guide.md'
+    },
+    {
+      id: 'sticky-notes-tutorial',
+      title: '付箋タブ一覧の背景作成',
+      description: '美しい付箋UIとタブレイアウトの実装方法',
+      difficulty: 3,
+      estimatedTime: '3-4時間',
+      iconType: 'sticky',
+      filePath: '/docs/learning-guides/Sticky-Notes-Background-Tutorial.md'
+    },
+    {
+      id: 'practice-page',
+      title: '練習用ページ',
+      description: '自由に編集して学習に活用できるページ',
+      difficulty: 1,
+      estimatedTime: '自由',
+      iconType: 'code',
+      filePath: '/docs/learning-guides/Practice-Page.md'
+    },
+    {
+      id: 'text-and-linebreak',
+      title: 'React/JSXでの改行とテキスト表示',
+      description: '改行、複数行テキスト、特殊文字の表示方法を学ぶ',
+      difficulty: 2,
+      estimatedTime: '1-2時間',
+      iconType: 'type',
+      filePath: '/docs/learning-guides/Text-and-LineBreak-Guide.md'
+    },
+    {
+      id: 'gpu-acceleration',
+      title: 'GPU加速とハードウェアアクセラレーション',
+      description: 'CSSでGPU加速を活用してスムーズなアニメーションを実現',
+      difficulty: 3,
+      estimatedTime: '2-3時間',
+      iconType: 'palette',
+      filePath: '/docs/learning-guides/GPU-Acceleration-Guide.md'
     }
   ]);
   
@@ -121,9 +174,20 @@ export const LearningPage: React.FC<LearningPageProps> = ({ onBackToChart }) => 
     if (savedItems) {
       try {
         const parsedItems = JSON.parse(savedItems);
-        setLearningItems(parsedItems);
+        // 古いデータ形式からの移行処理
+        const migratedItems = parsedItems.map((item: any) => {
+          if (item.icon && !item.iconType) {
+            // 古いicon形式からiconTypeへの変換は無視してデフォルト値を使用
+            const { icon, ...rest } = item;
+            return { ...rest, iconType: 'book' };
+          }
+          return item;
+        });
+        setLearningItems(migratedItems);
       } catch (error) {
         console.error('Failed to parse saved learning items:', error);
+        // エラーが発生した場合はローカルストレージをクリア
+        localStorage.removeItem('learning-items');
       }
     }
     
@@ -193,7 +257,7 @@ export const LearningPage: React.FC<LearningPageProps> = ({ onBackToChart }) => 
       description: '',
       difficulty: 1,
       estimatedTime: '',
-      icon: <BookIcon />,
+      iconType: 'book',
       filePath: '',
       completed: false
     });
@@ -241,6 +305,16 @@ export const LearningPage: React.FC<LearningPageProps> = ({ onBackToChart }) => 
     );
   };
 
+  const handleOpenGuide = (item: LearningItem) => {
+    setSelectedGuide(item);
+  };
+
+  const handleBackToList = () => {
+    setSelectedGuide(null);
+  };
+
+  // 削除（画面遷移せずに右側に表示するため）
+
   return (
     <Box sx={{ 
       minHeight: '100vh',
@@ -248,83 +322,89 @@ export const LearningPage: React.FC<LearningPageProps> = ({ onBackToChart }) => 
       position: 'relative',
       overflow: 'auto',
     }}>
+      {/* 戻るボタン - 固定位置 */}
+      <Button
+        variant="contained"
+        startIcon={<ArrowBackIcon />}
+        onClick={onBackToChart}
+        sx={{
+          position: 'fixed',
+          top: 20,
+          left: 20,
+          zIndex: 1200,
+          backgroundColor: 'rgba(255, 255, 255, 0.2)',
+          backdropFilter: 'blur(10px) saturate(180%)',
+          border: '1px solid rgba(255, 255, 255, 0.3)',
+          color: '#fff',
+          fontWeight: 600,
+          borderRadius: 3,
+          px: 3,
+          py: 1.5,
+          boxShadow: `
+            0 4px 15px 0 rgba(0, 0, 0, 0.2),
+            inset 0 1px 0 0 rgba(255, 255, 255, 0.3)
+          `,
+          transition: 'all 0.3s ease',
+          '&:hover': {
+            backgroundColor: 'rgba(255, 255, 255, 0.3)',
+            transform: 'translateY(-2px)',
+            boxShadow: `
+              0 6px 20px 0 rgba(0, 0, 0, 0.25),
+              inset 0 1px 0 0 rgba(255, 255, 255, 0.4)
+            `,
+          },
+          '&:active': {
+            transform: 'translateY(0px)',
+            transition: 'all 0.1s ease',
+          },
+        }}
+      >
+        チャートに戻る
+      </Button>
       {/* ヘッダー */}
-      <Paper
+      <Box
         sx={{
           position: 'sticky',
           top: 0,
           zIndex: 100,
           backgroundColor: 'rgba(255, 255, 255, 0.15)',
           backdropFilter: 'blur(20px) saturate(180%)',
-          border: 'none',
-          borderRadius: 0,
-          boxShadow: `
-            0 4px 20px 0 rgba(0, 0, 0, 0.1),
-            inset 0 1px 0 0 rgba(255, 255, 255, 0.2)
-          `,
+          borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
+          boxShadow: '0 4px 20px 0 rgba(0, 0, 0, 0.1)',
+          px: 4,
+          py: 2,
         }}
       >
-        <Container maxWidth="lg">
-          <Box sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'space-between',
-            py: 2,
-          }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <SchoolIcon sx={{ fontSize: 32, color: '#fff' }} />
-              <Typography 
-                variant="h4" 
-                sx={{ 
-                  fontWeight: 'bold',
-                  color: '#fff',
-                  textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
-                }}
-              >
-                React & CSS 学習センター
-              </Typography>
-            </Box>
-            
-            <Button
-              variant="contained"
-              startIcon={<ArrowBackIcon />}
-              onClick={onBackToChart}
-              sx={{
-                backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                backdropFilter: 'blur(10px) saturate(180%)',
-                border: '1px solid rgba(255, 255, 255, 0.3)',
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+        }}>
+          {/* タイトル - 中央 */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <SchoolIcon sx={{ fontSize: 32, color: '#fff' }} />
+            <Typography 
+              variant="h4" 
+              sx={{ 
+                fontWeight: 'bold',
                 color: '#fff',
-                fontWeight: 600,
-                borderRadius: 3,
-                px: 3,
-                py: 1.5,
-                boxShadow: `
-                  0 4px 15px 0 rgba(0, 0, 0, 0.2),
-                  inset 0 1px 0 0 rgba(255, 255, 255, 0.3)
-                `,
-                transition: 'all 0.3s ease',
-                '&:hover': {
-                  backgroundColor: 'rgba(255, 255, 255, 0.3)',
-                  transform: 'translateY(-2px)',
-                  boxShadow: `
-                    0 6px 20px 0 rgba(0, 0, 0, 0.25),
-                    inset 0 1px 0 0 rgba(255, 255, 255, 0.4)
-                  `,
-                },
-                '&:active': {
-                  transform: 'translateY(0px)',
-                  transition: 'all 0.1s ease',
-                },
+                textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
               }}
             >
-              チャートに戻る
-            </Button>
+              React & CSS 学習センター
+            </Typography>
           </Box>
-        </Container>
-      </Paper>
+        </Box>
+      </Box>
 
       {/* メインコンテンツエリア */}
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Box sx={{ 
+        display: 'flex',
+        flexDirection: 'column',
+        height: 'calc(100vh - 80px)', // ヘッダー分を引く
+        px: 3,
+        pb: 3,
+      }}>
         {/* タブナビゲーション */}
         <Paper
           sx={{
@@ -332,7 +412,8 @@ export const LearningPage: React.FC<LearningPageProps> = ({ onBackToChart }) => 
             backdropFilter: 'blur(10px)',
             border: '1px solid rgba(255, 255, 255, 0.2)',
             borderRadius: 3,
-            mb: 3,
+            mb: 2,
+            mt: 2,
           }}
         >
           <Tabs
@@ -358,32 +439,69 @@ export const LearningPage: React.FC<LearningPageProps> = ({ onBackToChart }) => 
 
         {/* タブコンテンツ */}
         {selectedTab === 0 && (
-          <Box>
-            {/* 学習リストヘッダー */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Typography variant="h4" sx={{ color: '#fff', fontWeight: 'bold' }}>
-                📖 学習ガイド一覧
-              </Typography>
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={handleAddItem}
-                sx={{
-                  backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                  backdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(255, 255, 255, 0.3)',
-                  color: '#fff',
+          <Box sx={{ 
+            display: 'flex', 
+            gap: 2, 
+            flex: 1,
+            overflow: 'hidden',
+          }}>
+            {/* 左側：学習項目リスト */}
+            <Paper sx={{ 
+              width: '380px',
+              flexShrink: 0,
+              backgroundColor: 'rgba(255, 255, 255, 0.08)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              borderRadius: 2,
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
+            }}>
+              <Box sx={{ 
+                p: 2,
+                flex: 1,
+                overflow: 'auto',
+                '&::-webkit-scrollbar': {
+                  width: '8px',
+                },
+                '&::-webkit-scrollbar-track': {
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  borderRadius: '4px',
+                },
+                '&::-webkit-scrollbar-thumb': {
+                  background: 'rgba(255, 255, 255, 0.2)',
+                  borderRadius: '4px',
                   '&:hover': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                    background: 'rgba(255, 255, 255, 0.3)',
                   },
-                }}
-              >
-                新規追加
-              </Button>
-            </Box>
+                },
+              }}>
+              {/* 学習リストヘッダー */}
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                <Typography variant="h5" sx={{ color: '#fff', fontWeight: 'bold' }}>
+                  📖 学習ガイド一覧
+                </Typography>
+                <Button
+                  variant="contained"
+                  startIcon={<AddIcon />}
+                  onClick={handleAddItem}
+                  size="small"
+                  sx={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                    color: '#fff',
+                    '&:hover': {
+                      backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                    },
+                  }}
+                >
+                  新規追加
+                </Button>
+              </Box>
 
-            {/* 学習項目リスト */}
-            <List sx={{ gap: 2, display: 'flex', flexDirection: 'column' }}>
+              {/* 学習項目リスト */}
+              <List sx={{ gap: 2, display: 'flex', flexDirection: 'column' }}>
               {learningItems.map((item) => (
                 <Card
                   key={item.id}
@@ -391,12 +509,13 @@ export const LearningPage: React.FC<LearningPageProps> = ({ onBackToChart }) => 
                   onDragStart={(e) => handleDragStart(e, item.id)}
                   onDragOver={handleDragOver}
                   onDrop={(e) => handleDrop(e, item.id)}
+                  onClick={() => handleOpenGuide(item)}
                   sx={{
                     backgroundColor: 'rgba(255, 255, 255, 0.1)',
                     backdropFilter: 'blur(20px)',
                     border: '1px solid rgba(255, 255, 255, 0.2)',
                     borderRadius: 3,
-                    cursor: 'grab',
+                    cursor: 'pointer',
                     transition: 'all 0.3s ease',
                     opacity: item.completed ? 0.7 : 1,
                     '&:hover': {
@@ -405,7 +524,7 @@ export const LearningPage: React.FC<LearningPageProps> = ({ onBackToChart }) => 
                       boxShadow: '0 8px 25px rgba(0, 0, 0, 0.2)',
                     },
                     '&:active': {
-                      cursor: 'grabbing',
+                      transform: 'translateY(-1px)',
                     },
                   }}
                 >
@@ -416,7 +535,7 @@ export const LearningPage: React.FC<LearningPageProps> = ({ onBackToChart }) => 
 
                       {/* アイコン */}
                       <Box sx={{ color: '#fff', mt: 0.5 }}>
-                        {item.icon}
+                        {getIconFromType(item.iconType)}
                       </Box>
 
                       {/* メインコンテンツ */}
@@ -473,21 +592,30 @@ export const LearningPage: React.FC<LearningPageProps> = ({ onBackToChart }) => 
                       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                         <IconButton
                           size="small"
-                          onClick={() => toggleCompleted(item.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleCompleted(item.id);
+                          }}
                           sx={{ color: item.completed ? '#4CAF50' : 'rgba(255, 255, 255, 0.7)' }}
                         >
                           {item.completed ? '✅' : '⭕'}
                         </IconButton>
                         <IconButton
                           size="small"
-                          onClick={() => handleEditItem(item)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEditItem(item);
+                          }}
                           sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
                         >
                           <EditIcon />
                         </IconButton>
                         <IconButton
                           size="small"
-                          onClick={() => handleDeleteItem(item.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteItem(item.id);
+                          }}
                           sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
                         >
                           <DeleteIcon />
@@ -497,7 +625,73 @@ export const LearningPage: React.FC<LearningPageProps> = ({ onBackToChart }) => 
                   </CardContent>
                 </Card>
               ))}
-            </List>
+              </List>
+              </Box>
+            </Paper>
+            
+            {/* 右側：選択された学習ガイドの内容 */}
+            <Paper sx={{ 
+              flex: 1,
+              backgroundColor: 'rgba(255, 255, 255, 0.08)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              borderRadius: 2,
+              display: 'flex',
+              overflow: 'hidden',
+            }}>
+              <Box sx={{ 
+                flex: 1,
+                overflow: 'auto',
+                '&::-webkit-scrollbar': {
+                  width: '12px',
+                },
+                '&::-webkit-scrollbar-track': {
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  borderRadius: '6px',
+                },
+                '&::-webkit-scrollbar-thumb': {
+                  background: 'rgba(255, 255, 255, 0.2)',
+                  borderRadius: '6px',
+                  border: '2px solid transparent',
+                  backgroundClip: 'padding-box',
+                  '&:hover': {
+                    background: 'rgba(255, 255, 255, 0.3)',
+                  },
+                },
+              }}>
+                {selectedGuide ? (
+                  <Box
+                    sx={{
+                      p: 4,
+                      backgroundColor: 'rgba(255, 255, 255, 0.92)',
+                      minHeight: '100%',
+                    }}
+                  >
+                  <LearningGuideViewer
+                    guideId={selectedGuide.id}
+                    title={selectedGuide.title}
+                    difficulty={selectedGuide.difficulty}
+                    estimatedTime={selectedGuide.estimatedTime}
+                    onBack={handleBackToList}
+                  />
+                  </Box>
+                ) : (
+                  <Box 
+                    sx={{ 
+                      height: '100%', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center',
+                      color: 'rgba(255, 255, 255, 0.5)'
+                    }}
+                  >
+                    <Typography variant="h6">
+                      左側のガイドをクリックして内容を表示
+                    </Typography>
+                  </Box>
+                )}
+              </Box>
+            </Paper>
           </Box>
         )}
 
@@ -516,7 +710,7 @@ export const LearningPage: React.FC<LearningPageProps> = ({ onBackToChart }) => 
             </Typography>
           </Box>
         )}
-      </Container>
+      </Box>
 
       {/* 編集ダイアログ */}
       <Dialog 
@@ -570,6 +764,22 @@ export const LearningPage: React.FC<LearningPageProps> = ({ onBackToChart }) => 
               <option value={3}>⭐⭐⭐☆☆ (中級)</option>
               <option value={4}>⭐⭐⭐⭐☆ (上級)</option>
               <option value={5}>⭐⭐⭐⭐⭐ (専門)</option>
+            </TextField>
+            <TextField
+              select
+              label="アイコン"
+              value={editingItem?.iconType || 'book'}
+              onChange={(e) => setEditingItem(prev => prev ? { ...prev, iconType: e.target.value as any } : null)}
+              SelectProps={{ native: true }}
+            >
+              <option value="book">📚 一般</option>
+              <option value="code">💻 コード</option>
+              <option value="palette">🎨 デザイン</option>
+              <option value="type">📝 TypeScript</option>
+              <option value="state">🔄 状態管理</option>
+              <option value="component">🧩 コンポーネント</option>
+              <option value="error">⚠️ エラー処理</option>
+              <option value="sticky">📌 付箋</option>
             </TextField>
           </Box>
         </DialogContent>

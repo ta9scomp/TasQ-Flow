@@ -1,180 +1,132 @@
 # 状態管理 学習ガイド
 
-**対象**: React基礎を学んだ初学者  
-**難易度**: ⭐⭐⭐☆☆（中級）  
-**学習時間**: 約2-3時間
+## 📚 はじめに
 
----
+このガイドでは、Reactアプリケーションの状態管理について学びます。特にZustandライブラリを使用した、TasQ Flowのような複雑なアプリケーションでの状態管理方法を理解していきます。
 
-## 📚 このガイドで学べること
+## 🎯 学習目標
 
-- 状態管理とは何か？なぜ必要なのか？
-- Reactの基本的な状態管理（useState）の復習
-- プロパティドリリング問題と解決策
-- Zustand（TasQ Flowで使用）の使い方
-- 実際のアプリで状態管理を実装する方法
+- Reactの状態管理の基本概念を理解する
+- useStateの限界とグローバル状態の必要性を知る
+- Zustandの基本的な使い方を習得する
+- 状態の設計パターンを学ぶ
+- TasQ Flowでの実践的な状態管理を理解する
 
----
+## 📖 1. 状態管理とは？
 
-## 🤔 状態管理って何？
+### 状態（State）の基本概念
 
-### 分かりやすい例え話：家族の情報共有
+状態とは、**アプリケーションが記憶しておく必要があるデータ**のことです。
 
-**状態管理なし**は、**家族がバラバラに情報を管理**している状態：
-```
-お父さん：「晩御飯は何？」
-お母さん：「え、何か決めてたっけ？」
-子供：「僕はピザがいい！」
-おばあちゃん：「私は和食がいいわ」
-→ みんなバラバラで混乱！
-```
+```typescript
+// 例：カウンターアプリの状態
+const [count, setCount] = useState(0);
+// ↑ countが「現在の状態」、setCountが「状態を変更する関数」
 
-**状態管理あり**は、**家族の掲示板で情報を一元管理**：
-```
-家族掲示板：
-- 今日の晩御飯: カレー
-- 明日の予定: 映画鑑賞
-- 買い物リスト: 人参、じゃがいも、お肉
-→ みんなが同じ情報を見られる！
+// 例：ToDoアプリの状態
+const [todos, setTodos] = useState([
+  { id: 1, text: "買い物", completed: false },
+  { id: 2, text: "掃除", completed: true }
+]);
 ```
 
----
+### ローカル状態 vs グローバル状態
 
-## 🧱 Reactの状態管理の基本
-
-### 1. 単一コンポーネント内の状態（useState）
-
-```tsx
-import { useState } from 'react';
-
+```typescript
+// ローカル状態（1つのコンポーネント内でのみ使用）
 function Counter() {
-  // このカウントは Counter コンポーネント内だけで使える
-  const [count, setCount] = useState(0);
-
+  const [count, setCount] = useState(0); // ← この状態は Counter コンポーネント内でのみ使える
+  
   return (
     <div>
-      <p>カウント: {count}</p>
+      <p>{count}</p>
       <button onClick={() => setCount(count + 1)}>+1</button>
     </div>
   );
 }
-```
 
-### 2. 親から子への状態の受け渡し（Props）
-
-```tsx
+// グローバル状態（複数のコンポーネントで共有）
 function App() {
-  const [user, setUser] = useState({ name: "田中", age: 25 });
-
+  const [user, setUser] = useState(null); // ← この状態を複数のコンポーネントで使いたい
+  
   return (
     <div>
-      <UserProfile user={user} />
-      <UserEditor user={user} onUserChange={setUser} />
-    </div>
-  );
-}
-
-function UserProfile({ user }) {
-  return (
-    <div>
-      <h2>{user.name}さんのプロフィール</h2>
-      <p>年齢: {user.age}歳</p>
-    </div>
-  );
-}
-
-function UserEditor({ user, onUserChange }) {
-  return (
-    <div>
-      <input
-        value={user.name}
-        onChange={(e) => onUserChange({ ...user, name: e.target.value })}
-      />
+      <Header user={user} />         {/* プロップスとして渡す */}
+      <Sidebar user={user} />        {/* プロップスとして渡す */}
+      <MainContent user={user} />    {/* プロップスとして渡す */}
     </div>
   );
 }
 ```
 
----
+## 📖 2. useStateの限界
 
-## 🚨 プロパティドリリング問題
+### Props Drilling問題
 
-### 問題：深いコンポーネントに状態を渡すのが大変
-
-```tsx
-// ❌ プロパティドリリング問題
+```typescript
+// 😰 Props Drilling: 深い階層にデータを渡すのが大変
 function App() {
-  const [user, setUser] = useState({ name: "田中" });
+  const [user, setUser] = useState({ name: "田中太郎" });
   
   return <Layout user={user} setUser={setUser} />;
 }
 
 function Layout({ user, setUser }) {
+  return <Sidebar user={user} setUser={setUser} />;
+}
+
+function Sidebar({ user, setUser }) {
+  return <UserProfile user={user} setUser={setUser} />;
+}
+
+function UserProfile({ user, setUser }) {
   return (
     <div>
-      <Header user={user} setUser={setUser} />
-      <Content user={user} setUser={setUser} />
+      <p>{user.name}</p>
+      <button onClick={() => setUser({ name: "新しい名前" })}>
+        名前変更
+      </button>
     </div>
   );
 }
+```
 
-function Header({ user, setUser }) {
-  return (
-    <header>
-      <Navigation user={user} setUser={setUser} />
-    </header>
-  );
-}
+### 状態の散在問題
 
-function Navigation({ user, setUser }) {
-  return (
-    <nav>
-      <UserMenu user={user} setUser={setUser} />
-    </nav>
-  );
-}
-
-function UserMenu({ user, setUser }) {
-  // やっとここで使える！でも長すぎる...
-  return <div>{user.name}</div>;
+```typescript
+// 😰 関連する状態が色々な場所に散らばっている
+function TaskApp() {
+  const [tasks, setTasks] = useState([]);
+  const [filter, setFilter] = useState('all');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  
+  // TaskList コンポーネント
+  // FilterBar コンポーネント
+  // LoadingSpinner コンポーネント
+  // ErrorMessage コンポーネント
+  
+  // これらのコンポーネントに状態を渡すのが大変...
 }
 ```
 
-### 解決策：グローバル状態管理
+## 📖 3. Zustandとは？
 
-```tsx
-// ✅ グローバル状態で解決
-function App() {
-  return <Layout />;
-}
+### Zustandの特徴
 
-function Layout() {
-  return (
-    <div>
-      <Header />
-      <Content />
-    </div>
-  );
-}
+Zustandは**シンプルで軽量**な状態管理ライブラリです：
 
-function UserMenu() {
-  const user = useUserStore((state) => state.user); // 直接取得！
-  return <div>{user.name}</div>;
-}
-```
+- ✅ **簡単**：覚えることが少ない
+- ✅ **軽量**：ファイルサイズが小さい
+- ✅ **TypeScript対応**：型安全
+- ✅ **React DevTools対応**：デバッグしやすい
 
----
-
-## 🎯 Zustand の使い方
-
-TasQ FlowではZustandという軽量な状態管理ライブラリを使用しています。
-
-### 1. 基本的なストアの作成
+### 基本的な使い方
 
 ```typescript
 import { create } from 'zustand';
 
-// ストアの型を定義
+// ストア（状態の保管場所）を作成
 interface CounterStore {
   count: number;
   increment: () => void;
@@ -182,25 +134,23 @@ interface CounterStore {
   reset: () => void;
 }
 
-// ストアを作成
 const useCounterStore = create<CounterStore>((set) => ({
+  // 初期状態
   count: 0,
+  
+  // 状態を変更するアクション
   increment: () => set((state) => ({ count: state.count + 1 })),
   decrement: () => set((state) => ({ count: state.count - 1 })),
   reset: () => set({ count: 0 }),
 }));
-```
 
-### 2. コンポーネントでの使用
-
-```tsx
+// コンポーネントで使用
 function Counter() {
-  // 必要な状態とアクションを取得
   const { count, increment, decrement, reset } = useCounterStore();
-
+  
   return (
     <div>
-      <h2>カウンター: {count}</h2>
+      <p>Count: {count}</p>
       <button onClick={increment}>+1</button>
       <button onClick={decrement}>-1</button>
       <button onClick={reset}>リセット</button>
@@ -208,38 +158,17 @@ function Counter() {
   );
 }
 
-function AnotherComponent() {
-  // 別のコンポーネントでも同じ状態にアクセスできる
+// 別のコンポーネントからも同じ状態にアクセス可能
+function DisplayCounter() {
   const count = useCounterStore((state) => state.count);
   
-  return <p>別の場所からのカウント: {count}</p>;
+  return <h2>現在のカウント: {count}</h2>;
 }
 ```
 
-### 3. 部分的な状態選択（パフォーマンス最適化）
+## 📖 4. 実践：ToDoアプリを作ろう
 
-```tsx
-function OptimizedComponent() {
-  // count だけを監視（他の状態が変わっても再レンダリングされない）
-  const count = useCounterStore((state) => state.count);
-  
-  // increment 関数だけを取得
-  const increment = useCounterStore((state) => state.increment);
-  
-  return (
-    <div>
-      <p>{count}</p>
-      <button onClick={increment}>+1</button>
-    </div>
-  );
-}
-```
-
----
-
-## 🎮 実践：ToDoアプリの状態管理
-
-### Step 1: ToDoストアの作成
+### Step 1: 基本的なToDoストア
 
 ```typescript
 interface Todo {
@@ -254,7 +183,6 @@ interface TodoStore {
   addTodo: (text: string) => void;
   toggleTodo: (id: string) => void;
   deleteTodo: (id: string) => void;
-  clearCompleted: () => void;
 }
 
 const useTodoStore = create<TodoStore>((set) => ({
@@ -281,6 +209,80 @@ const useTodoStore = create<TodoStore>((set) => ({
   deleteTodo: (id: string) => set((state) => ({
     todos: state.todos.filter(todo => todo.id !== id)
   })),
+}));
+```
+
+### Step 2: フィルタリング機能を追加
+
+```typescript
+type FilterType = 'all' | 'active' | 'completed';
+
+interface TodoStore {
+  todos: Todo[];
+  filter: FilterType;
+  
+  // ゲッター（計算プロパティ）
+  filteredTodos: Todo[];
+  activeCount: number;
+  completedCount: number;
+  
+  // アクション
+  addTodo: (text: string) => void;
+  toggleTodo: (id: string) => void;
+  deleteTodo: (id: string) => void;
+  setFilter: (filter: FilterType) => void;
+  clearCompleted: () => void;
+}
+
+const useTodoStore = create<TodoStore>((set, get) => ({
+  todos: [],
+  filter: 'all',
+  
+  // 計算プロパティ
+  get filteredTodos() {
+    const { todos, filter } = get();
+    switch (filter) {
+      case 'active':
+        return todos.filter(todo => !todo.completed);
+      case 'completed':
+        return todos.filter(todo => todo.completed);
+      default:
+        return todos;
+    }
+  },
+  
+  get activeCount() {
+    return get().todos.filter(todo => !todo.completed).length;
+  },
+  
+  get completedCount() {
+    return get().todos.filter(todo => todo.completed).length;
+  },
+  
+  // アクション
+  addTodo: (text: string) => set((state) => ({
+    todos: [
+      ...state.todos,
+      {
+        id: Date.now().toString(),
+        text,
+        completed: false,
+        createdAt: new Date(),
+      }
+    ]
+  })),
+  
+  toggleTodo: (id: string) => set((state) => ({
+    todos: state.todos.map(todo =>
+      todo.id === id ? { ...todo, completed: !todo.completed } : todo
+    )
+  })),
+  
+  deleteTodo: (id: string) => set((state) => ({
+    todos: state.todos.filter(todo => todo.id !== id)
+  })),
+  
+  setFilter: (filter: FilterType) => set({ filter }),
   
   clearCompleted: () => set((state) => ({
     todos: state.todos.filter(todo => !todo.completed)
@@ -288,324 +290,402 @@ const useTodoStore = create<TodoStore>((set) => ({
 }));
 ```
 
-### Step 2: コンポーネントの実装
+### Step 3: コンポーネントで使用
 
-```tsx
-// メインアプリ
-function TodoApp() {
+```typescript
+// ToDoリストコンポーネント
+function TodoList() {
+  const filteredTodos = useTodoStore((state) => state.filteredTodos);
+  const toggleTodo = useTodoStore((state) => state.toggleTodo);
+  const deleteTodo = useTodoStore((state) => state.deleteTodo);
+  
   return (
-    <div>
-      <h1>📝 ToDoアプリ（Zustand版）</h1>
-      <TodoInput />
-      <TodoList />
-      <TodoStats />
-    </div>
+    <ul>
+      {filteredTodos.map(todo => (
+        <li key={todo.id}>
+          <input
+            type="checkbox"
+            checked={todo.completed}
+            onChange={() => toggleTodo(todo.id)}
+          />
+          <span style={{ 
+            textDecoration: todo.completed ? 'line-through' : 'none' 
+          }}>
+            {todo.text}
+          </span>
+          <button onClick={() => deleteTodo(todo.id)}>削除</button>
+        </li>
+      ))}
+    </ul>
   );
 }
 
-// 新しいToDo入力
+// ToDo追加コンポーネント
 function TodoInput() {
-  const [inputText, setInputText] = useState('');
+  const [text, setText] = useState('');
   const addTodo = useTodoStore((state) => state.addTodo);
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (inputText.trim()) {
-      addTodo(inputText.trim());
-      setInputText('');
+    if (text.trim()) {
+      addTodo(text);
+      setText('');
     }
   };
   
   return (
     <form onSubmit={handleSubmit}>
       <input
-        value={inputText}
-        onChange={(e) => setInputText(e.target.value)}
-        placeholder="新しいタスクを入力..."
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        placeholder="新しいToDoを入力..."
       />
       <button type="submit">追加</button>
     </form>
   );
 }
 
-// ToDoリスト
-function TodoList() {
-  const todos = useTodoStore((state) => state.todos);
-  
-  return (
-    <ul>
-      {todos.map(todo => (
-        <TodoItem key={todo.id} todo={todo} />
-      ))}
-    </ul>
-  );
-}
-
-// 個別のToDoアイテム
-function TodoItem({ todo }: { todo: Todo }) {
-  const { toggleTodo, deleteTodo } = useTodoStore((state) => ({
-    toggleTodo: state.toggleTodo,
-    deleteTodo: state.deleteTodo,
-  }));
-  
-  return (
-    <li>
-      <input
-        type="checkbox"
-        checked={todo.completed}
-        onChange={() => toggleTodo(todo.id)}
-      />
-      <span style={{ 
-        textDecoration: todo.completed ? 'line-through' : 'none' 
-      }}>
-        {todo.text}
-      </span>
-      <button onClick={() => deleteTodo(todo.id)}>削除</button>
-    </li>
-  );
-}
-
-// 統計情報
-function TodoStats() {
-  const { todos, clearCompleted } = useTodoStore((state) => ({
-    todos: state.todos,
-    clearCompleted: state.clearCompleted,
-  }));
-  
-  const totalTodos = todos.length;
-  const completedTodos = todos.filter(todo => todo.completed).length;
-  const activeTodos = totalTodos - completedTodos;
+// フィルターコンポーネント
+function TodoFilter() {
+  const { filter, setFilter, activeCount, completedCount } = useTodoStore();
   
   return (
     <div>
-      <p>
-        全体: {totalTodos} | 
-        完了: {completedTodos} | 
-        残り: {activeTodos}
-      </p>
-      {completedTodos > 0 && (
-        <button onClick={clearCompleted}>
-          完了済みをクリア
-        </button>
-      )}
+      <button 
+        onClick={() => setFilter('all')}
+        style={{ fontWeight: filter === 'all' ? 'bold' : 'normal' }}
+      >
+        すべて ({activeCount + completedCount})
+      </button>
+      <button 
+        onClick={() => setFilter('active')}
+        style={{ fontWeight: filter === 'active' ? 'bold' : 'normal' }}
+      >
+        アクティブ ({activeCount})
+      </button>
+      <button 
+        onClick={() => setFilter('completed')}
+        style={{ fontWeight: filter === 'completed' ? 'bold' : 'normal' }}
+      >
+        完了済み ({completedCount})
+      </button>
     </div>
   );
 }
 ```
 
----
+## 📖 5. TasQ Flowの状態管理
 
-## 🏗️ TasQ Flowでの状態管理
-
-### 1. アプリストアの設計
+### アプリケーション全体の状態設計
 
 ```typescript
-interface AppStore {
-  // ビューの状態
+// types/index.ts
+export interface Task {
+  id: string;
+  title: string;
+  description?: string;
+  startDate: Date;
+  endDate: Date;
+  progress: number;
+  priority: number;
+  status: TaskStatus;
+  assignees: string[];
+  tags: string[];
+  parentId?: string;
+}
+
+export type ViewMode = 'gantt' | 'members' | 'sticky' | 'todo' | 'history' | 'settings';
+export type TaskStatus = 'notStarted' | 'inProgress' | 'completed' | 'onHold';
+
+// stores/useAppStore.ts
+interface AppState {
+  // 基本状態
   selectedView: 'home' | 'teams';
   selectedTeamId?: string;
   selectedProjectId?: string;
-  viewMode: 'gantt' | 'members' | 'sticky' | 'todo' | 'history' | 'settings';
+  viewMode: ViewMode;
   sidebarOpen: boolean;
-
-  // データの状態
+  
+  // タスク管理
   tasks: Task[];
-  projects: Project[];
-  teams: Team[];
+  selectedTaskId?: string;
+  
+  // UI状態
+  isLoading: boolean;
+  error: string | null;
+}
 
-  // アクション
+interface AppActions {
+  // ナビゲーション
   setSelectedView: (view: 'home' | 'teams') => void;
   setSelectedTeamId: (teamId: string | undefined) => void;
   setSelectedProjectId: (projectId: string | undefined) => void;
   setViewMode: (mode: ViewMode) => void;
   setSidebarOpen: (open: boolean) => void;
   
-  // タスク関連のアクション
+  // タスク操作
   addTask: (task: Task) => void;
   updateTask: (id: string, updates: Partial<Task>) => void;
   deleteTask: (id: string) => void;
+  setSelectedTaskId: (id: string | undefined) => void;
+  
+  // ユーティリティ
+  getSelectedProject: () => Project | undefined;
+  getTasksByProject: (projectId: string) => Task[];
 }
+
+export const useAppStore = create<AppState & AppActions>((set, get) => ({
+  // 初期状態
+  selectedView: 'home',
+  selectedTeamId: undefined,
+  selectedProjectId: undefined,
+  viewMode: 'gantt',
+  sidebarOpen: false,
+  tasks: [],
+  selectedTaskId: undefined,
+  isLoading: false,
+  error: null,
+  
+  // アクション
+  setSelectedView: (view) => set({ selectedView: view }),
+  setSelectedTeamId: (teamId) => set({ selectedTeamId: teamId }),
+  setSelectedProjectId: (projectId) => set({ selectedProjectId: projectId }),
+  setViewMode: (mode) => set({ viewMode: mode }),
+  setSidebarOpen: (open) => set({ sidebarOpen: open }),
+  
+  addTask: (task) => set((state) => ({ 
+    tasks: [...state.tasks, task] 
+  })),
+  
+  updateTask: (id, updates) => set((state) => ({
+    tasks: state.tasks.map(task => 
+      task.id === id ? { ...task, ...updates } : task
+    )
+  })),
+  
+  deleteTask: (id) => set((state) => ({
+    tasks: state.tasks.filter(task => task.id !== id)
+  })),
+  
+  setSelectedTaskId: (id) => set({ selectedTaskId: id }),
+  
+  // ゲッター
+  getSelectedProject: () => {
+    const { selectedProjectId } = get();
+    if (!selectedProjectId) return undefined;
+    return getProjectById(selectedProjectId);
+  },
+  
+  getTasksByProject: (projectId) => {
+    const { tasks } = get();
+    return tasks.filter(task => task.projectId === projectId);
+  },
+}));
 ```
 
-### 2. 永続化（ローカルストレージ保存）
+## 📖 6. 状態の永続化
+
+### localStorageとの連携
 
 ```typescript
 import { persist } from 'zustand/middleware';
 
-const useAppStore = create<AppStore>()(
+const useTodoStore = create<TodoStore>()(
   persist(
     (set, get) => ({
-      selectedView: 'home',
-      selectedTeamId: undefined,
-      // ... 他の状態
-
-      setSelectedView: (view) => set({ selectedView: view }),
-      // ... 他のアクション
+      todos: [],
+      filter: 'all',
+      
+      // アクション...
+      addTodo: (text: string) => set((state) => ({
+        todos: [...state.todos, /* new todo */]
+      })),
+      // ...
     }),
     {
-      name: 'tasq-flow-storage', // ローカルストレージのキー
-      partialize: (state) => ({
-        // 保存したい状態だけを選択
-        selectedView: state.selectedView,
-        sidebarOpen: state.sidebarOpen,
+      name: 'todo-storage', // localStorageのキー名
+      // 保存したくないプロパティを除外
+      partialize: (state) => ({ 
+        todos: state.todos,
+        filter: state.filter 
       }),
     }
   )
 );
 ```
 
-### 3. ミドルウェアの使用
+### セッションストレージとの連携
 
 ```typescript
-import { subscribeWithSelector } from 'zustand/middleware';
+import { createJSONStorage } from 'zustand/middleware';
 
-const useAppStore = create<AppStore>()(
-  subscribeWithSelector(
-    persist(
-      (set, get) => ({
-        // ストアの定義
-      }),
-      { name: 'tasq-flow-storage' }
-    )
+const useAppStore = create<AppState>()(
+  persist(
+    (set, get) => ({
+      // ストアの定義...
+    }),
+    {
+      name: 'app-storage',
+      storage: createJSONStorage(() => sessionStorage), // sessionStorageを使用
+    }
   )
 );
-
-// 状態の変化を監視
-useAppStore.subscribe(
-  (state) => state.selectedProjectId,
-  (selectedProjectId) => {
-    if (selectedProjectId) {
-      console.log('プロジェクトが選択されました:', selectedProjectId);
-    }
-  }
-);
 ```
 
----
+## 🎁 実践的なパターン
 
-## 🎁 実践的なTips
-
-### 1. 状態の分割
+### 1. 非同期処理の管理
 
 ```typescript
-// ❌ すべてを一つのストアに入れる
-interface BigStore {
-  user: User;
-  todos: Todo[];
-  notifications: Notification[];
-  settings: Settings;
-  // ... 他にもたくさん
+interface ApiStore {
+  users: User[];
+  isLoading: boolean;
+  error: string | null;
+  
+  fetchUsers: () => Promise<void>;
+  createUser: (userData: CreateUserData) => Promise<void>;
 }
 
-// ✅ 関連する状態ごとに分割
-const useUserStore = create<UserStore>(...);
-const useTodoStore = create<TodoStore>(...);
-const useNotificationStore = create<NotificationStore>(...);
-const useSettingsStore = create<SettingsStore>(...);
-```
-
-### 2. computed値（計算されたデータ）
-
-```typescript
-const useTodoStore = create<TodoStore>((set, get) => ({
-  todos: [],
-  
-  // 計算されたデータを取得するメソッド
-  getStats: () => {
-    const todos = get().todos;
-    return {
-      total: todos.length,
-      completed: todos.filter(t => t.completed).length,
-      active: todos.filter(t => !t.completed).length,
-    };
-  },
-  
-  // または getter として
-  get stats() {
-    const todos = get().todos;
-    return {
-      total: todos.length,
-      completed: todos.filter(t => t.completed).length,
-      active: todos.filter(t => !t.completed).length,
-    };
-  },
-}));
-
-// 使用時
-function Stats() {
-  const stats = useTodoStore((state) => state.getStats());
-  return <div>完了: {stats.completed}/{stats.total}</div>;
-}
-```
-
-### 3. 非同期アクション
-
-```typescript
-const useApiStore = create<ApiStore>((set) => ({
-  loading: false,
+const useApiStore = create<ApiStore>((set, get) => ({
+  users: [],
+  isLoading: false,
   error: null,
-  data: null,
   
-  fetchData: async () => {
-    set({ loading: true, error: null });
+  fetchUsers: async () => {
+    set({ isLoading: true, error: null });
     
     try {
-      const response = await fetch('/api/data');
-      const data = await response.json();
-      set({ data, loading: false });
+      const response = await fetch('/api/users');
+      const users = await response.json();
+      set({ users, isLoading: false });
     } catch (error) {
-      set({ error: error.message, loading: false });
+      set({ 
+        error: error.message, 
+        isLoading: false 
+      });
+    }
+  },
+  
+  createUser: async (userData) => {
+    set({ isLoading: true, error: null });
+    
+    try {
+      const response = await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData),
+      });
+      
+      const newUser = await response.json();
+      
+      set((state) => ({ 
+        users: [...state.users, newUser],
+        isLoading: false 
+      }));
+    } catch (error) {
+      set({ 
+        error: error.message, 
+        isLoading: false 
+      });
     }
   },
 }));
 ```
 
----
+### 2. 状態のスライス分割
+
+```typescript
+// 大きなストアを機能ごとに分割
+const createTaskSlice = (set, get) => ({
+  tasks: [],
+  selectedTaskId: null,
+  
+  addTask: (task) => set((state) => ({ 
+    tasks: [...state.tasks, task] 
+  })),
+  selectTask: (id) => set({ selectedTaskId: id }),
+});
+
+const createUISlice = (set, get) => ({
+  sidebarOpen: false,
+  theme: 'light',
+  
+  toggleSidebar: () => set((state) => ({ 
+    sidebarOpen: !state.sidebarOpen 
+  })),
+  setTheme: (theme) => set({ theme }),
+});
+
+const useAppStore = create((set, get) => ({
+  ...createTaskSlice(set, get),
+  ...createUISlice(set, get),
+}));
+```
+
+### 3. セレクター（最適化）
+
+```typescript
+// 必要な部分のみを購読して再レンダリングを最適化
+function TaskList() {
+  // ❌ 悪い例：ストア全体を購読
+  const store = useAppStore();
+  
+  // ✅ 良い例：必要な部分のみを購読
+  const tasks = useAppStore((state) => state.tasks);
+  const addTask = useAppStore((state) => state.addTask);
+  
+  return (
+    <div>
+      {tasks.map(task => (
+        <TaskItem key={task.id} task={task} />
+      ))}
+    </div>
+  );
+}
+
+// 複雑なセレクター
+const useFilteredTasks = (filter: string) => {
+  return useAppStore((state) => 
+    state.tasks.filter(task => 
+      task.title.toLowerCase().includes(filter.toLowerCase())
+    )
+  );
+};
+```
 
 ## 🏆 レベルアップチャレンジ
 
 ### 初級（⭐）
-1. カウンターアプリをZustandで作り直してみよう
-2. ショッピングカートの状態管理を作ってみよう
+1. シンプルなカウンターストアを作ってみよう
+2. ToDoアプリに編集機能を追加しよう
 
 ### 中級（⭐⭐）
-1. ToDoアプリに「カテゴリー」機能を追加しよう
-2. ローカルストレージ保存機能を追加しよう
+1. 非同期処理を含むAPIストアを作ろう
+2. 複数のストアを組み合わせて使ってみよう
 
 ### 上級（⭐⭐⭐）
-1. 複数のストアを組み合わせた複雑なアプリを作ろう
-2. 最適化（メモ化、部分選択）を考慮したストア設計をしよう
+1. TasQ Flow風のタスク管理ストアを作ろう
+2. 最適化されたセレクターを実装しよう
 
----
+## 📚 まとめ
 
-## 📖 参考資料
-
-### Zustand公式
-- [Zustand GitHub](https://github.com/pmndrs/zustand)
-- [Zustand TypeScript Guide](https://github.com/pmndrs/zustand#typescript)
-
-### React状態管理
-- [React State Management](https://ja.react.dev/learn/managing-state)
-- [State Management Patterns](https://kentcdodds.com/blog/application-state-management-with-react)
-
----
-
-## 💡 まとめ
-
-状態管理は、**アプリの情報を整理整頓する技術**です。
+状態管理は、Reactアプリケーションの**心臓部**です：
 
 ### 覚えておこう！
-1. **ローカル状態**：コンポーネント内だけで使うなら useState
-2. **グローバル状態**：複数のコンポーネントで共有するなら Zustand
-3. **状態の分割**：関連する状態をまとめて管理
-4. **パフォーマンス**：必要な部分だけを監視
+1. **ローカル vs グローバル**：適切な場所で状態を管理する
+2. **Zustand**：シンプルで軽量な状態管理ライブラリ
+3. **非同期処理**：API通信も状態管理で処理する
+4. **最適化**：セレクターで無駄な再レンダリングを防ぐ
 
-最初は「なんで複雑にするの？」と思うかもしれませんが、アプリが大きくなるにつれて状態管理の重要性がわかります。TasQ Flowのような複雑なアプリには必須の技術です！ 🗂️
+状態管理をマスターすれば、複雑なアプリケーションも綺麗に整理できます！
 
----
+## 🔗 次のステップ
 
-**次のステップ**: [コンポーネント設計学習ガイド](./Component-Design-Learning-Guide.md)
+- [コンポーネント設計学習ガイド](./Component-Design-Learning-Guide.md)で設計を学ぶ
+- [エラーハンドリング学習ガイド](./Error-Handling-Learning-Guide.md)でエラー処理を学ぶ
 
----
+## 💡 参考リソース
 
-**質問や疑問があれば、いつでも開発チームにお聞きください！**
+- [Zustand公式ドキュメント](https://zustand-demo.pmnd.rs/)
+- [React状態管理の比較](https://react.dev/learn/managing-state)
+- [状態管理のベストプラクティス](https://react.dev/learn/choosing-the-state-structure)

@@ -62,7 +62,7 @@ export const TaskSyncManager: React.FC<TaskSyncManagerProps> = ({
     conflictCount: 0,
   });
   
-  const syncTimerRef = useRef<NodeJS.Timeout>();
+  const syncTimerRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
   const processingRef = useRef(false);
 
   // 同期状態の更新
@@ -109,39 +109,34 @@ export const TaskSyncManager: React.FC<TaskSyncManagerProps> = ({
     };
   }, [autoSyncInterval, isConnected, syncQueue.length]);
 
-  // キューアイテムの追加
-  const addToQueue = useCallback((item: Omit<SyncQueueItem, 'id' | 'timestamp' | 'retryCount'>) => {
-    const queueItem: SyncQueueItem = {
-      ...item,
-      id: `sync_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      timestamp: Date.now(),
-      retryCount: 0,
-    };
-
-    setSyncQueue(prev => {
-      // 重複する操作を統合（同じタスクの複数の更新など）
-      const filtered = prev.filter(existing => {
-        if (existing.type === 'update' && item.type === 'update' && 
-            existing.taskData?.id === item.taskData?.id) {
-          return false; // 古い更新を削除
-        }
-        return true;
-      });
-
-      // 優先度に基づいてソート
-      const newQueue = [...filtered, queueItem].sort((a, b) => {
-        const priorityOrder = { high: 3, medium: 2, low: 1 };
-        return priorityOrder[b.priority] - priorityOrder[a.priority];
-      });
-
-      return newQueue;
-    });
-
-    // オンラインかつアイドル状態なら即座に処理
-    if (isConnected && !processingRef.current) {
-      processSyncQueue();
-    }
-  }, [isConnected]);
+  // キューアイテムの追加 (for future use)
+  // const addToQueue = useCallback((item: Omit<SyncQueueItem, 'id' | 'timestamp' | 'retryCount'>) => {
+  //   const queueItem: SyncQueueItem = { ...item, id: `sync_${Date.now()}_${Math.random()}`, timestamp: Date.now(), retryCount: 0 };
+  //
+  //   setSyncQueue(prev => {
+  //     // 重複する操作を統合（同じタスクの複数の更新など）
+  //     const filtered = prev.filter(existing => {
+  //       if (existing.type === 'update' && item.type === 'update' && 
+  //           existing.taskData?.id === item.taskData?.id) {
+  //         return false; // 古い更新を削除
+  //       }
+  //       return true;
+  //     });
+  //
+  //     // 優先度に基づいてソート
+  //     const newQueue = [...filtered, queueItem].sort((a, b) => {
+  //       const priorityOrder = { high: 3, medium: 2, low: 1 };
+  //       return priorityOrder[b.priority] - priorityOrder[a.priority];
+  //     });
+  //
+  //     return newQueue;
+  //   });
+  //
+  //   // オンラインかつアイドル状態なら即座に処理
+  //   if (isConnected && !processingRef.current) {
+  //     processSyncQueue();
+  //   }
+  // }, [isConnected]);
 
   // 同期キューの処理
   const processSyncQueue = useCallback(async () => {
@@ -239,50 +234,27 @@ export const TaskSyncManager: React.FC<TaskSyncManagerProps> = ({
     }
   };
 
-  // 公開API：タスク作成の同期
-  const syncTaskCreate = useCallback((task: Task, priority: SyncQueueItem['priority'] = 'medium') => {
-    console.log('TaskSyncManager: Queueing task create', { taskId: task.id, priority });
-    addToQueue({
-      type: 'create',
-      taskData: task,
-      priority,
-    });
-  }, [addToQueue]);
-
-  // 公開API：タスク更新の同期
-  const syncTaskUpdate = useCallback((task: Task, priority: SyncQueueItem['priority'] = 'medium') => {
-    console.log('TaskSyncManager: Queueing task update', { taskId: task.id, priority });
-    addToQueue({
-      type: 'update',
-      taskData: task,
-      priority,
-    });
-  }, [addToQueue]);
-
-  // 公開API：タスク削除の同期
-  const syncTaskDelete = useCallback((taskId: string, priority: SyncQueueItem['priority'] = 'medium') => {
-    console.log('TaskSyncManager: Queueing task delete', { taskId, priority });
-    addToQueue({
-      type: 'delete',
-      taskId,
-      priority,
-    });
-  }, [addToQueue]);
-
-  // 公開API：手動同期実行
-  const forcSync = useCallback(() => {
-    console.log('TaskSyncManager: Force sync requested');
-    if (syncQueue.length > 0) {
-      processSyncQueue();
-    }
-  }, [processSyncQueue, syncQueue.length]);
-
-  // 公開API：同期キューのクリア
-  const clearSyncQueue = useCallback(() => {
-    console.log('TaskSyncManager: Clearing sync queue');
-    setSyncQueue([]);
-    updateSyncState({ syncErrors: [] });
-  }, []);
+  // 公開API（将来利用予定）
+  // const syncTaskCreate = useCallback((task: Task, priority: SyncQueueItem['priority'] = 'medium') => {
+  //   console.log('TaskSyncManager: Queueing task create', { taskId: task.id, priority });
+  //   addToQueue({ type: 'create', taskData: task, priority });
+  // }, [addToQueue]);
+  // const syncTaskUpdate = useCallback((task: Task, priority: SyncQueueItem['priority'] = 'medium') => {
+  //   console.log('TaskSyncManager: Queueing task update', { taskId: task.id, priority });
+  //   addToQueue({ type: 'update', taskData: task, priority });
+  // }, [addToQueue]);
+  // const syncTaskDelete = useCallback((taskId: string, priority: SyncQueueItem['priority'] = 'medium') => {
+  //   console.log('TaskSyncManager: Queueing task delete', { taskId, priority });
+  //   addToQueue({ type: 'delete', taskId, priority });
+  // }, [addToQueue]);
+  // const forcSync = useCallback(() => {
+  //   console.log('TaskSyncManager: Force sync requested');
+  //   if (syncQueue.length > 0) { processSyncQueue(); }
+  // }, [processSyncQueue, syncQueue.length]);
+  // const clearSyncQueue = useCallback(() => {
+  //   console.log('TaskSyncManager: Clearing sync queue');
+  //   setSyncQueue([]); updateSyncState({ syncErrors: [] });
+  // }, []);
 
   // デバッグ情報の出力
   useEffect(() => {
@@ -297,15 +269,15 @@ export const TaskSyncManager: React.FC<TaskSyncManagerProps> = ({
     }
   }, [syncState, syncQueue.length, selectedTeamId, selectedProjectId]);
 
-  // TaskSyncManager機能を子コンポーネントに提供
-  const taskSyncAPI = {
-    syncTaskCreate,
-    syncTaskUpdate,
-    syncTaskDelete,
-    forcSync,
-    clearSyncQueue,
-    syncState,
-  };
+  // TaskSyncManager機能を子コンポーネントに提供 (for future use)
+  // const taskSyncAPI = {
+  //   syncTaskCreate,
+  //   syncTaskUpdate,
+  //   syncTaskDelete,
+  //   forcSync,
+  //   clearSyncQueue,
+  //   syncState,
+  // };
 
   // contextとしてAPIを提供（必要に応じて）
   return (

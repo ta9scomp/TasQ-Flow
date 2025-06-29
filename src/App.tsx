@@ -13,6 +13,7 @@ import { HistoryTab } from './components/History/HistoryTab';
 import { ProjectSettingsTab } from './components/ProjectSettings/ProjectSettingsTab';
 import { RightSidebar } from './components/Layout/RightSidebar';
 import { LearningPage } from './components/Learning/LearningPage';
+import PracticePage from './components/Practice/PracticePage';
 import { MockRealtimeProvider, useRealtime } from './contexts/RealtimeContext';
 import { ConflictResolutionDialog } from './components/Realtime/ConflictResolutionDialog';
 import { TaskSyncManager } from './components/Sync/TaskSyncManager';
@@ -174,6 +175,7 @@ function AppContent() {
   const [isCreatingNewTask, setIsCreatingNewTask] = React.useState(false);
   const [rightSidebarOpen, setRightSidebarOpen] = React.useState(false);
   const [showLearningPage, setShowLearningPage] = React.useState(false);
+  const [showPracticePage, setShowPracticePage] = React.useState(false);
   
   // リアルタイム機能の利用
   const { conflicts, broadcastTaskUpdate, broadcastTaskCreate } = useRealtime();
@@ -190,11 +192,19 @@ function AppContent() {
 
   const handleNavigateToLearning = () => {
     setShowLearningPage(true);
+    setShowPracticePage(false);
+    setRightSidebarOpen(false);
+  };
+
+  const handleNavigateToPractice = () => {
+    setShowPracticePage(true);
+    setShowLearningPage(false);
     setRightSidebarOpen(false);
   };
 
   const handleBackToChart = () => {
     setShowLearningPage(false);
+    setShowPracticePage(false);
   };
 
   const handleTeamSelect = (teamId: string) => {
@@ -362,6 +372,16 @@ function AppContent() {
       </ThemeProvider>
     );
   }
+
+  // 練習ページ表示時は専用レイアウト
+  if (showPracticePage) {
+    return (
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <PracticePage onBackToMain={handleBackToChart} />
+      </ThemeProvider>
+    );
+  }
   
   return (
     <ThemeProvider theme={theme}>
@@ -465,6 +485,7 @@ function AppContent() {
           open={rightSidebarOpen} 
           onClose={() => setRightSidebarOpen(false)}
           onNavigateToLearning={handleNavigateToLearning}
+          onNavigateToPractice={handleNavigateToPractice}
         />
         </Box>
       </TaskSyncManager>

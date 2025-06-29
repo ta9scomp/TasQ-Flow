@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
-import { Box, Tooltip, Typography, Paper, Grid2 } from '@mui/material';
+import { Box, Tooltip, Typography, Paper } from '@mui/material';
+import Grid from '@mui/material/Grid';
 import { format, getDay, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import type { WorkloadData } from './MemberWorkloadCalculator';
@@ -317,26 +318,26 @@ export const HeatmapRenderer: React.FC<HeatmapRendererProps> = ({
     return (
       <Box>
         {config.showLabels && (
-          <Grid2 container sx={{ mb: 1 }}>
+          <Grid container sx={{ mb: 1 }}>
             {['日', '月', '火', '水', '木', '金', '土'].map(day => (
-              <Grid2 size='grow' key={day} sx={{ textAlign: 'center' }}>
+              <Grid size='grow' key={day} sx={{ textAlign: 'center' }}>
                 <Typography variant="caption" fontWeight="bold">
                   {day}
                 </Typography>
-              </Grid2>
+              </Grid>
             ))}
-          </Grid2>
+          </Grid>
         )}
 
         {weeks.map((week, weekIndex) => (
-          <Grid2 container key={weekIndex} sx={{ mb: 0.5, justifyContent: 'center' }}>
+          <Grid container key={weekIndex} sx={{ mb: 0.5, justifyContent: 'center' }}>
             {week.map((date, dayIndex) => {
               const dayData = workloadData.find(d => 
                 d.date.toDateString() === date.toDateString()
               );
               
               return (
-                <Grid2 key={dayIndex} sx={{ textAlign: 'center', p: 0.25 }}>
+                <Grid key={dayIndex} sx={{ textAlign: 'center', p: 0.25 }}>
                   {dayData ? (
                     renderCell(dayData, weekIndex * 7 + dayIndex)
                   ) : (
@@ -348,10 +349,10 @@ export const HeatmapRenderer: React.FC<HeatmapRendererProps> = ({
                       }}
                     />
                   )}
-                </Grid2>
+                </Grid>
               );
             })}
-          </Grid2>
+          </Grid>
         ))}
       </Box>
     );
@@ -443,7 +444,7 @@ function getAvailabilityLabel(availability: WorkloadData['availability']): strin
 // カラーパレット生成ユーティリティ
 export function generateCustomColorPalette(
   baseColor: string,
-  intensity: 'light' | 'normal' | 'dark' = 'normal'
+  _intensity: 'light' | 'normal' | 'dark' = 'normal'
 ): HeatmapConfig['customColors'] {
   // HSLカラーから段階的なパレットを生成
   // 実装は簡略化

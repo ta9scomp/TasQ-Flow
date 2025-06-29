@@ -49,7 +49,7 @@ export const ProjectNavigation: React.FC<ProjectNavigationProps> = ({
   projectId,
   viewMode,
   onViewModeChange,
-  onProjectSelect,
+  onProjectSelect: _onProjectSelect,
 }) => {
   const [projectMenuAnchor, setProjectMenuAnchor] = React.useState<null | HTMLElement>(null);
 

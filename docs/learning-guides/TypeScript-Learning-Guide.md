@@ -1,638 +1,576 @@
 # TypeScript 学習ガイド
 
-**対象**: JavaScript基礎を学んだ初学者  
-**難易度**: ⭐⭐⭐☆☆（中級）  
-**学習時間**: 約3-4時間
+## 📚 はじめに
 
----
+このガイドでは、JavaScriptの知識をベースにTypeScriptを学びます。TasQ Flowプロジェクトで実際に使われているTypeScriptコードを理解できるようになることを目標とします。
 
-## 📚 このガイドで学べること
+## 🎯 学習目標
 
-- TypeScriptとは何か？なぜ使うのか？
-- 基本的な型の使い方
-- Reactでの型定義
-- エラーの読み方と対処法
-- TasQ Flowで使われている実際のTypeScript
+- TypeScriptの基本的な型システムを理解する
+- 型定義の書き方を習得する
+- インターフェースと型エイリアスの使い方を学ぶ
+- ジェネリクスの基礎を理解する
+- React + TypeScriptの実践的な使い方を身につける
 
----
+## 📖 1. TypeScriptとは？
 
-## 🤔 TypeScriptって何？
+### なぜTypeScriptを使うのか？
 
-### 分かりやすい例え話：設計図付きの組み立て
-
-**JavaScript**は、**説明書なしの組み立て**のようなものです：
+JavaScriptの問題点：
 ```javascript
-// 何が入ってくるかわからない
-function calculateTotal(items) {
-  return items.reduce((sum, item) => sum + item.price, 0);
+// JavaScriptだと...
+function addUser(user) {
+  // userに何が入っているか分からない
+  console.log(user.name); // エラーになるかも？
+  console.log(user.age);  // 存在するかも不明
 }
 
-calculateTotal("文字列"); // エラーになるけど実行時まで分からない
+addUser("田中太郎"); // 文字列を渡してもエラーにならない！
 ```
 
-**TypeScript**は、**詳しい設計図付きの組み立て**です：
+TypeScriptの解決策：
 ```typescript
-// 何が入ってくるか明確
-interface Item {
-  name: string;
-  price: number;
-}
-
-function calculateTotal(items: Item[]): number {
-  return items.reduce((sum, item) => sum + item.price, 0);
-}
-
-calculateTotal("文字列"); // エラー！書く時点で間違いがわかる
-```
-
----
-
-## 🎯 TypeScriptの基本型
-
-### 1. プリミティブ型
-
-```typescript
-// 基本的な型
-let userName: string = "田中太郎";
-let age: number = 25;
-let isActive: boolean = true;
-
-// 配列
-let numbers: number[] = [1, 2, 3, 4, 5];
-let names: string[] = ["田中", "佐藤", "鈴木"];
-
-// null や undefined
-let maybe: string | null = null; // string または null
-let optional: string | undefined = undefined;
-```
-
-### 2. オブジェクト型
-
-```typescript
-// オブジェクトの型定義
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  age?: number; // ? = オプショナル（あってもなくてもOK）
-}
-
-// 使い方
-const user: User = {
-  id: 1,
-  name: "田中太郎",
-  email: "tanaka@example.com"
-  // age は省略OK
-};
-
-// 関数の型
-function greetUser(user: User): string {
-  return `こんにちは、${user.name}さん！`;
-}
-```
-
-### 3. 関数の型
-
-```typescript
-// 関数の型定義方法1
-function add(a: number, b: number): number {
-  return a + b;
-}
-
-// 関数の型定義方法2
-const multiply = (a: number, b: number): number => {
-  return a * b;
-};
-
-// 関数型の変数
-type MathFunction = (a: number, b: number) => number;
-const divide: MathFunction = (a, b) => a / b;
-```
-
----
-
-## ⚛️ ReactでのTypeScript
-
-### 1. コンポーネントのPropsの型定義
-
-```typescript
-// Propsの型を定義
-interface GreetingProps {
-  name: string;
-  age?: number; // オプショナル
-  onGreet?: () => void; // 関数もオプショナル
-}
-
-// コンポーネント
-function Greeting({ name, age, onGreet }: GreetingProps) {
-  return (
-    <div>
-      <h1>こんにちは、{name}さん！</h1>
-      {age && <p>{age}歳ですね</p>}
-      {onGreet && <button onClick={onGreet}>挨拶</button>}
-    </div>
-  );
-}
-
-// 使用例
-function App() {
-  return (
-    <Greeting 
-      name="田中"
-      age={25}
-      onGreet={() => alert("こんにちは！")}
-    />
-  );
-}
-```
-
-### 2. useState の型
-
-```typescript
-import { useState } from 'react';
-
-function Counter() {
-  // TypeScriptが自動で型を推測
-  const [count, setCount] = useState(0); // number型として推測
-
-  // 明示的に型を指定
-  const [message, setMessage] = useState<string>("Hello");
-
-  // 複雑な型の場合
-  interface Todo {
-    id: number;
-    text: string;
-    completed: boolean;
-  }
-  
-  const [todos, setTodos] = useState<Todo[]>([]); // Todo配列
-
-  return (
-    <div>
-      <p>カウント: {count}</p>
-      <button onClick={() => setCount(count + 1)}>+1</button>
-    </div>
-  );
-}
-```
-
-### 3. イベントハンドラーの型
-
-```typescript
-import { ChangeEvent, FormEvent } from 'react';
-
-function ContactForm() {
-  const [email, setEmail] = useState<string>("");
-
-  // input要素の変更イベント
-  const handleEmailChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setEmail(event.target.value);
-  };
-
-  // フォーム送信イベント
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    console.log("送信:", email);
-  };
-
-  return (
-    <form onSubmit={handleSubmit}>
-      <input
-        type="email"
-        value={email}
-        onChange={handleEmailChange}
-        placeholder="メールアドレス"
-      />
-      <button type="submit">送信</button>
-    </form>
-  );
-}
-```
-
----
-
-## 🛠️ よく使う型のパターン
-
-### 1. Union型（複数の型のいずれか）
-
-```typescript
-// 文字列または数値
-let id: string | number = "user123";
-id = 456; // これもOK
-
-// 特定の文字列のみ
-type Status = "pending" | "completed" | "cancelled";
-let taskStatus: Status = "pending"; // OK
-let taskStatus2: Status = "running"; // エラー！
-
-// 関数の引数でも使える
-function processData(data: string | number | boolean) {
-  if (typeof data === "string") {
-    return data.toUpperCase(); // string のメソッドが使える
-  } else if (typeof data === "number") {
-    return data.toFixed(2); // number のメソッドが使える
-  }
-  return data; // boolean
-}
-```
-
-### 2. Array型とObject型
-
-```typescript
-// 配列の型
-interface Task {
-  id: number;
-  title: string;
-  completed: boolean;
-}
-
-let tasks: Task[] = [
-  { id: 1, title: "買い物", completed: false },
-  { id: 2, title: "掃除", completed: true }
-];
-
-// オブジェクトの型（キーが動的）
-interface TaskMap {
-  [key: string]: Task; // 文字列のキーでTask型の値
-}
-
-let taskMap: TaskMap = {
-  "task1": { id: 1, title: "買い物", completed: false },
-  "task2": { id: 2, title: "掃除", completed: true }
-};
-```
-
-### 3. 関数の引数と戻り値
-
-```typescript
-// 基本的な関数
-function formatName(firstName: string, lastName: string): string {
-  return `${lastName} ${firstName}`;
-}
-
-// オプショナル引数
-function greet(name: string, title?: string): string {
-  if (title) {
-    return `こんにちは、${title} ${name}さん`;
-  }
-  return `こんにちは、${name}さん`;
-}
-
-// デフォルト引数
-function createUser(name: string, role: string = "user"): User {
-  return { name, role };
-}
-
-// 戻り値が void（何も返さない）
-function logMessage(message: string): void {
-  console.log(message);
-}
-```
-
----
-
-## 🎮 実践：ToDoアプリをTypeScriptで作ろう
-
-### Step 1: 型定義
-
-```typescript
-// ToDo項目の型
-interface Todo {
-  id: number;
-  text: string;
-  completed: boolean;
-  createdAt: Date;
-}
-
-// Propsの型
-interface TodoItemProps {
-  todo: Todo;
-  onToggle: (id: number) => void;
-  onDelete: (id: number) => void;
-}
-
-interface TodoListProps {
-  todos: Todo[];
-  onToggle: (id: number) => void;
-  onDelete: (id: number) => void;
-}
-```
-
-### Step 2: コンポーネント実装
-
-```typescript
-import { useState, ChangeEvent, FormEvent } from 'react';
-
-function TodoApp() {
-  const [todos, setTodos] = useState<Todo[]>([]);
-  const [inputText, setInputText] = useState<string>("");
-
-  const addTodo = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    
-    if (inputText.trim() === "") return;
-
-    const newTodo: Todo = {
-      id: Date.now(),
-      text: inputText.trim(),
-      completed: false,
-      createdAt: new Date()
-    };
-
-    setTodos([...todos, newTodo]);
-    setInputText("");
-  };
-
-  const toggleTodo = (id: number) => {
-    setTodos(todos.map(todo =>
-      todo.id === id 
-        ? { ...todo, completed: !todo.completed }
-        : todo
-    ));
-  };
-
-  const deleteTodo = (id: number) => {
-    setTodos(todos.filter(todo => todo.id !== id));
-  };
-
-  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setInputText(event.target.value);
-  };
-
-  return (
-    <div>
-      <h1>📝 TypeScript ToDoアプリ</h1>
-      
-      <form onSubmit={addTodo}>
-        <input
-          type="text"
-          value={inputText}
-          onChange={handleInputChange}
-          placeholder="新しいタスクを入力..."
-        />
-        <button type="submit">追加</button>
-      </form>
-
-      <TodoList
-        todos={todos}
-        onToggle={toggleTodo}
-        onDelete={deleteTodo}
-      />
-    </div>
-  );
-}
-
-// TodoList コンポーネント
-function TodoList({ todos, onToggle, onDelete }: TodoListProps) {
-  return (
-    <ul>
-      {todos.map(todo => (
-        <TodoItem
-          key={todo.id}
-          todo={todo}
-          onToggle={onToggle}
-          onDelete={onDelete}
-        />
-      ))}
-    </ul>
-  );
-}
-
-// TodoItem コンポーネント
-function TodoItem({ todo, onToggle, onDelete }: TodoItemProps) {
-  return (
-    <li>
-      <input
-        type="checkbox"
-        checked={todo.completed}
-        onChange={() => onToggle(todo.id)}
-      />
-      <span style={{ 
-        textDecoration: todo.completed ? 'line-through' : 'none' 
-      }}>
-        {todo.text}
-      </span>
-      <button onClick={() => onDelete(todo.id)}>削除</button>
-    </li>
-  );
-}
-```
-
----
-
-## 🏗️ TasQ FlowでのTypeScript使用例
-
-### 1. タスクの型定義
-
-```typescript
-// TasQ Flowのタスク型
-interface Task {
-  id: string;
-  title: string;
-  description?: string;
-  startDate: Date;
-  endDate: Date;
-  progress: number; // 0-100
-  priority: number; // 0-100
-  status: 'notStarted' | 'inProgress' | 'completed' | 'onHold';
-  assignees: string[];
-  tags: string[];
-  checklist: ChecklistItem[];
-  parentId?: string; // 親タスクのID
-}
-
-interface ChecklistItem {
-  id: string;
-  text: string;
-  completed: boolean;
-  createdAt: Date;
-}
-```
-
-### 2. コンポーネントのProps
-
-```typescript
-// ガントチャートコンポーネントのProps
-interface GanttChartProps {
-  tasks: Task[];
-  startDate: Date;
-  endDate: Date;
-  onTaskClick?: (task: Task) => void;
-  onTaskUpdate?: (taskId: string, updates: Partial<Task>) => void;
-  readonly?: boolean;
-}
-
-// タスクカードコンポーネント
-interface TaskCardProps {
-  task: Task;
-  onEdit: (task: Task) => void;
-  onDelete: (taskId: string) => void;
-  onStatusChange: (taskId: string, status: Task['status']) => void;
-}
-```
-
-### 3. カスタムフック
-
-```typescript
-// カスタムフックの型定義
-interface UseTasksReturn {
-  tasks: Task[];
-  loading: boolean;
-  error: string | null;
-  addTask: (task: Omit<Task, 'id'>) => void;
-  updateTask: (id: string, updates: Partial<Task>) => void;
-  deleteTask: (id: string) => void;
-}
-
-function useTasks(): UseTasksReturn {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // 実装...
-
-  return {
-    tasks,
-    loading,
-    error,
-    addTask,
-    updateTask,
-    deleteTask
-  };
-}
-```
-
----
-
-## 🚨 エラーの読み方と対処法
-
-### 1. よくあるエラーと解決法
-
-```typescript
-// エラー例1: プロパティが存在しない
+// TypeScriptなら...
 interface User {
   name: string;
   age: number;
 }
 
-const user: User = { name: "田中" }; 
-// エラー: Property 'age' is missing
+function addUser(user: User) {
+  console.log(user.name); // 必ず存在することが保証される
+  console.log(user.age);  // 型が正しいことも保証される
+}
 
-// 解決法1: 必要なプロパティを追加
-const user: User = { name: "田中", age: 25 };
+addUser("田中太郎"); // ❌ コンパイルエラー！型が違います
+addUser({ name: "田中太郎", age: 25 }); // ✅ OK!
+```
 
-// 解決法2: プロパティをオプショナルにする
-interface User {
+## 📖 2. 基本的な型
+
+### プリミティブ型
+
+```typescript
+// 文字列
+let userName: string = "田中太郎";
+userName = 123; // ❌ エラー：数値は代入できません
+
+// 数値
+let age: number = 25;
+age = "25歳"; // ❌ エラー：文字列は代入できません
+
+// 真偽値
+let isActive: boolean = true;
+isActive = 1; // ❌ エラー：数値は代入できません
+
+// null と undefined
+let data: null = null;
+let value: undefined = undefined;
+
+// any（何でも入る - なるべく使わない）
+let anything: any = "文字列";
+anything = 123; // OK（でも型安全性が失われる）
+```
+
+### 配列
+
+```typescript
+// 数値の配列
+let numbers: number[] = [1, 2, 3, 4, 5];
+numbers.push("6"); // ❌ エラー：文字列は追加できません
+
+// 文字列の配列
+let names: string[] = ["田中", "佐藤", "鈴木"];
+
+// 別の書き方
+let scores: Array<number> = [90, 85, 78];
+
+// 複数の型を持つ配列
+let mixed: (string | number)[] = ["田中", 25, "佐藤", 30];
+```
+
+### オブジェクト
+
+```typescript
+// オブジェクトの型定義
+let user: {
   name: string;
-  age?: number; // オプショナル
-}
+  age: number;
+  email?: string; // ?は省略可能
+} = {
+  name: "田中太郎",
+  age: 25
+  // emailは省略可能なのでなくてもOK
+};
+
+// 関数を含むオブジェクト
+let calculator: {
+  add: (a: number, b: number) => number;
+  subtract: (a: number, b: number) => number;
+} = {
+  add: (a, b) => a + b,
+  subtract: (a, b) => a - b
+};
 ```
 
-```typescript
-// エラー例2: 型が一致しない
-function processNumber(num: number): string {
-  return num; // エラー: Type 'number' is not assignable to type 'string'
-}
+## 📖 3. 関数の型定義
 
-// 解決法: 正しい型に変換
-function processNumber(num: number): string {
-  return num.toString(); // 文字列に変換
-}
-```
+### 基本的な関数
 
 ```typescript
-// エラー例3: null の可能性
-function getLength(text: string | null): number {
-  return text.length; // エラー: Object is possibly 'null'
+// 引数と戻り値の型を指定
+function add(a: number, b: number): number {
+  return a + b;
 }
 
-// 解決法: null チェック
-function getLength(text: string | null): number {
-  if (text === null) {
-    return 0;
+// アロー関数
+const multiply = (a: number, b: number): number => {
+  return a * b;
+};
+
+// 戻り値がない場合はvoid
+function logMessage(message: string): void {
+  console.log(message);
+}
+
+// オプショナル引数
+function greet(name: string, prefix?: string): string {
+  if (prefix) {
+    return `${prefix} ${name}さん`;
   }
-  return text.length;
+  return `こんにちは、${name}さん`;
+}
+
+greet("田中"); // "こんにちは、田中さん"
+greet("田中", "おはよう"); // "おはよう 田中さん"
+```
+
+### デフォルト引数
+
+```typescript
+function createTask(
+  title: string,
+  priority: number = 50,
+  completed: boolean = false
+): Task {
+  return {
+    id: Date.now().toString(),
+    title,
+    priority,
+    completed
+  };
+}
+
+// 使い方
+createTask("買い物"); // priorityは50、completedはfalse
+createTask("会議", 80); // completedはfalse
+createTask("レポート", 90, true); // すべて指定
+```
+
+## 📖 4. インターフェースと型エイリアス
+
+### インターフェース
+
+```typescript
+// 基本的なインターフェース
+interface Task {
+  id: string;
+  title: string;
+  description?: string;
+  completed: boolean;
+  priority: number;
+  createdAt: Date;
+}
+
+// インターフェースを使う
+const newTask: Task = {
+  id: "task-1",
+  title: "TypeScriptを学ぶ",
+  completed: false,
+  priority: 80,
+  createdAt: new Date()
+};
+
+// インターフェースの拡張
+interface DetailedTask extends Task {
+  assignee: string;
+  tags: string[];
+  dueDate?: Date;
+}
+
+// ネストしたインターフェース
+interface Project {
+  id: string;
+  name: string;
+  tasks: Task[];
+  members: {
+    id: string;
+    name: string;
+    role: "admin" | "member" | "viewer";
+  }[];
 }
 ```
 
-### 2. デバッグのコツ
+### 型エイリアス
 
 ```typescript
-// 1. console.log で型を確認
-function debugFunction(data: unknown) {
-  console.log("データの型:", typeof data);
-  console.log("データの値:", data);
-  
-  // 型ガード
-  if (typeof data === 'string') {
-    console.log("文字列です:", data.toUpperCase());
+// 基本的な型エイリアス
+type UserID = string;
+type Age = number;
+
+// ユニオン型
+type Status = "pending" | "in-progress" | "completed" | "cancelled";
+
+// 関数の型
+type ClickHandler = (event: React.MouseEvent) => void;
+
+// 複雑な型の組み合わせ
+type TaskUpdate = {
+  title?: string;
+  description?: string;
+  completed?: boolean;
+} & {
+  updatedAt: Date;
+  updatedBy: string;
+};
+```
+
+### インターフェース vs 型エイリアス
+
+```typescript
+// インターフェース - 拡張可能
+interface Animal {
+  name: string;
+}
+
+interface Dog extends Animal {
+  breed: string;
+}
+
+// 同名のインターフェースは自動的にマージされる
+interface Animal {
+  age: number;
+}
+
+// 型エイリアス - より柔軟
+type Pet = Dog | Cat; // ユニオン型
+type PetName = Pet["name"]; // 型の一部を抽出
+```
+
+## 📖 5. ジェネリクス
+
+### 基本的なジェネリクス
+
+```typescript
+// ジェネリクスを使わない場合
+function getFirstNumber(arr: number[]): number {
+  return arr[0];
+}
+
+function getFirstString(arr: string[]): string {
+  return arr[0];
+}
+
+// ジェネリクスを使う場合
+function getFirst<T>(arr: T[]): T {
+  return arr[0];
+}
+
+// 使い方
+const firstNumber = getFirst<number>([1, 2, 3]); // 1
+const firstName = getFirst<string>(["田中", "佐藤"]); // "田中"
+const firstTask = getFirst<Task>(tasks); // Task型
+```
+
+### コンポーネントでのジェネリクス
+
+```typescript
+// 汎用的なリストコンポーネント
+interface ListProps<T> {
+  items: T[];
+  renderItem: (item: T) => React.ReactNode;
+  keyExtractor: (item: T) => string;
+}
+
+function List<T>({ items, renderItem, keyExtractor }: ListProps<T>) {
+  return (
+    <ul>
+      {items.map(item => (
+        <li key={keyExtractor(item)}>
+          {renderItem(item)}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+// 使い方
+<List
+  items={tasks}
+  renderItem={(task) => <span>{task.title}</span>}
+  keyExtractor={(task) => task.id}
+/>
+```
+
+## 📖 6. React + TypeScript
+
+### コンポーネントの型定義
+
+```typescript
+// 関数コンポーネント
+interface ButtonProps {
+  label: string;
+  onClick: () => void;
+  variant?: "primary" | "secondary";
+  disabled?: boolean;
+}
+
+const Button: React.FC<ButtonProps> = ({ 
+  label, 
+  onClick, 
+  variant = "primary",
+  disabled = false 
+}) => {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={`btn btn-${variant}`}
+    >
+      {label}
+    </button>
+  );
+};
+```
+
+### イベントハンドラーの型
+
+```typescript
+// 各種イベントの型
+const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+  console.log("クリックされました");
+};
+
+const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  console.log(event.target.value);
+};
+
+const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  event.preventDefault();
+  // フォーム処理
+};
+
+const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+  if (event.key === "Enter") {
+    // Enter キーが押された時の処理
+  }
+};
+```
+
+### useState の型
+
+```typescript
+// 明示的な型指定
+const [count, setCount] = useState<number>(0);
+const [user, setUser] = useState<User | null>(null);
+const [tasks, setTasks] = useState<Task[]>([]);
+
+// 複雑な状態の型
+interface FormData {
+  title: string;
+  description: string;
+  priority: number;
+  tags: string[];
+}
+
+const [formData, setFormData] = useState<FormData>({
+  title: "",
+  description: "",
+  priority: 50,
+  tags: []
+});
+
+// 状態更新
+setFormData(prev => ({
+  ...prev,
+  title: "新しいタイトル"
+}));
+```
+
+## 🎯 実践：TasQ Flowの型定義
+
+### タスクの型定義
+
+```typescript
+// types/task.ts
+export interface Task {
+  id: string;
+  title: string;
+  description?: string;
+  startDate: Date;
+  endDate: Date;
+  progress: number;
+  priority: number;
+  status: TaskStatus;
+  assignees: string[];
+  tags: string[];
+  parentId?: string;
+  checklist: ChecklistItem[];
+}
+
+export type TaskStatus = 
+  | "notStarted" 
+  | "inProgress" 
+  | "completed" 
+  | "onHold";
+
+export interface ChecklistItem {
+  id: string;
+  text: string;
+  completed: boolean;
+}
+
+// タスクの更新用の型（すべてオプショナル）
+export type TaskUpdate = Partial<Omit<Task, "id">>;
+```
+
+### ストアの型定義
+
+```typescript
+// stores/types.ts
+interface AppState {
+  tasks: Task[];
+  selectedTaskId: string | null;
+  viewMode: ViewMode;
+  isLoading: boolean;
+  error: string | null;
+}
+
+interface AppActions {
+  addTask: (task: Task) => void;
+  updateTask: (id: string, updates: TaskUpdate) => void;
+  deleteTask: (id: string) => void;
+  selectTask: (id: string | null) => void;
+  setViewMode: (mode: ViewMode) => void;
+  setError: (error: string | null) => void;
+}
+
+export type AppStore = AppState & AppActions;
+```
+
+## 🎁 実践的なTips
+
+### 1. 型の絞り込み（Type Guards）
+
+```typescript
+// typeof を使った型ガード
+function processValue(value: string | number) {
+  if (typeof value === "string") {
+    // ここでは value は string 型
+    return value.toUpperCase();
+  } else {
+    // ここでは value は number 型
+    return value * 2;
   }
 }
 
-// 2. as を使った型アサーション（注意して使用）
-const userInput = document.getElementById('input') as HTMLInputElement;
-console.log(userInput.value); // HTMLInputElement として扱う
-
-// 3. 型チェック関数を作る
-function isTask(obj: any): obj is Task {
-  return obj && 
-         typeof obj.id === 'string' &&
-         typeof obj.title === 'string' &&
-         obj.startDate instanceof Date;
+// in 演算子を使った型ガード
+interface Bird {
+  fly: () => void;
+  layEggs: () => void;
 }
 
-if (isTask(someData)) {
-  // ここでは someData は Task 型として扱われる
-  console.log(someData.title);
+interface Fish {
+  swim: () => void;
+  layEggs: () => void;
+}
+
+function move(pet: Bird | Fish) {
+  if ("fly" in pet) {
+    pet.fly(); // Bird として扱える
+  } else {
+    pet.swim(); // Fish として扱える
+  }
 }
 ```
 
----
+### 2. ユーティリティ型
+
+```typescript
+// Partial - すべてのプロパティをオプショナルに
+type PartialTask = Partial<Task>;
+
+// Required - すべてのプロパティを必須に
+type RequiredTask = Required<Task>;
+
+// Pick - 特定のプロパティだけを抽出
+type TaskSummary = Pick<Task, "id" | "title" | "status">;
+
+// Omit - 特定のプロパティを除外
+type TaskWithoutDates = Omit<Task, "startDate" | "endDate">;
+
+// Record - キーと値の型を指定したオブジェクト
+type TaskMap = Record<string, Task>;
+```
+
+### 3. 型アサーション
+
+```typescript
+// as を使った型アサーション
+const inputElement = document.getElementById("task-input") as HTMLInputElement;
+inputElement.value = "新しいタスク";
+
+// ! を使った非null アサーション
+const title = task.title!; // title が絶対に存在することを保証
+
+// 型ガードを使った安全な方法（推奨）
+if (task.title) {
+  const title = task.title; // ここでは string 型
+}
+```
 
 ## 🏆 レベルアップチャレンジ
 
 ### 初級（⭐）
-1. 基本的な型（string, number, boolean）を使った変数を作ろう
-2. 簡単なインターフェースを定義してオブジェクトを作ろう
+1. User インターフェースを定義して、ユーザー情報を管理しよう
+2. 関数に適切な型を付けて、型安全にしよう
+
+```typescript
+// ヒント
+interface User {
+  // ここにプロパティを定義
+}
+
+function createUser(/* 引数の型は？ */): /* 戻り値の型は？ */ {
+  // 実装
+}
+```
 
 ### 中級（⭐⭐）
-1. ジェネリクス（型の引数）を使った関数を作ろう
-2. カスタムフックを TypeScript で作ろう
+1. ジェネリクスを使った汎用的なフィルター関数を作ろう
+2. React コンポーネントに適切な型を付けよう
 
 ### 上級（⭐⭐⭐）
-1. 複雑な型（Union型、Intersection型）を使いこなそう
-2. 型ガード関数を作って安全な型変換をしよう
+1. 型安全な状態管理システムを作ろう
+2. APIレスポンスの型定義と型ガードを実装しよう
 
----
+## 📚 まとめ
 
-## 📖 参考資料
+TypeScriptは最初は難しく感じるかもしれませんが、以下の利点があります：
 
-### TypeScript公式
-- [TypeScript Handbook](https://www.typescriptlang.org/docs/)
-- [TypeScript Playground](https://www.typescriptlang.org/play)
+- ✅ **エラーの早期発見**：実行前にバグを見つけられる
+- ✅ **自動補完**：IDEが賢くコードを提案してくれる
+- ✅ **リファクタリング**：安全にコードを変更できる
+- ✅ **ドキュメント効果**：型がコードの仕様書になる
 
-### React + TypeScript
+段階的に型を追加していけば、必ず使いこなせるようになります！
+
+## 🔗 次のステップ
+
+- [状態管理学習ガイド](./State-Management-Learning-Guide.md)へ進む
+- [コンポーネント設計学習ガイド](./Component-Design-Learning-Guide.md)で設計を学ぶ
+
+## 💡 参考リソース
+
+- [TypeScript公式ドキュメント](https://www.typescriptlang.org/ja/)
 - [React TypeScript Cheatsheet](https://react-typescript-cheatsheet.netlify.app/)
-- [React公式 TypeScript](https://ja.react.dev/learn/typescript)
-
----
-
-## 💡 まとめ
-
-TypeScriptは、**型安全性**によってバグを事前に防ぐ強力な言語です。
-
-### 覚えておこう！
-1. **型定義**：何が入ってくるか明確にする
-2. **インターフェース**：オブジェクトの形を定義
-3. **エラーメッセージ**：親切な警告を活用
-4. **段階的導入**：少しずつ型を追加していく
-
-最初は「面倒だな」と感じるかもしれませんが、慣れると「型があって安心」と感じるようになります。大規模なアプリ開発では必須の技術です！ 🛡️
-
----
-
-**次のステップ**: [状態管理学習ガイド](./State-Management-Learning-Guide.md)
-
----
-
-**質問や疑問があれば、いつでも開発チームにお聞きください！**
+- [TypeScript Deep Dive](https://typescript-jp.gitbook.io/deep-dive/)

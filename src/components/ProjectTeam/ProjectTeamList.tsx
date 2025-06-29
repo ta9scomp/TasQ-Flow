@@ -17,14 +17,12 @@ import {
   Divider,
   Fade,
 } from '@mui/material';
-import Grid2 from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 
 import {
   Group as TeamIcon,
   Person as PersonIcon,
   Assignment as ProjectIcon,
-  TrendingUp as ProgressIcon,
-  Schedule as ScheduleIcon,
 } from '@mui/icons-material';
 import { sampleProjectTeams } from '../../data/sampleProjectTeams';
 import type { ProjectTeam, Project } from '../../types/task';
@@ -87,14 +85,14 @@ export const ProjectTeamList: React.FC<ProjectTeamListProps> = ({
           </Typography>
         </Box>
 
-        <Grid2 container spacing={3}>
+        <Grid container spacing={3}>
           {sampleProjectTeams.map((team) => {
             const progress = getTeamProgress(team);
             const statusCounts = getProjectStatusCounts(team.projects);
             const isSelected = selectedTeamId === team.id;
 
             return (
-              <Grid2 size={{ xs: 12, md: 6, lg: 4 }} key={team.id}>
+              <Grid size={{ xs: 12, md: 6, lg: 4 }} key={team.id}>
                 <Card
                   sx={{
                     height: '100%',
@@ -152,8 +150,8 @@ export const ProjectTeamList: React.FC<ProjectTeamListProps> = ({
 
                       {/* 統計情報 */}
                       <Paper variant="outlined" sx={{ p: 2, mb: 2, bgcolor: 'grey.50' }}>
-                        <Grid2 container spacing={2}>
-                          <Grid2 size={6}>
+                        <Grid container spacing={2}>
+                          <Grid size={6}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                               <ProjectIcon fontSize="small" color="primary" />
                               <Typography variant="body2" color="text.secondary">
@@ -163,8 +161,8 @@ export const ProjectTeamList: React.FC<ProjectTeamListProps> = ({
                             <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
                               {team.projects.length}件
                             </Typography>
-                          </Grid2>
-                          <Grid2 size={6}>
+                          </Grid>
+                          <Grid size={6}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                               <PersonIcon fontSize="small" color="primary" />
                               <Typography variant="body2" color="text.secondary">
@@ -174,8 +172,8 @@ export const ProjectTeamList: React.FC<ProjectTeamListProps> = ({
                             <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
                               {team.members.length}人
                             </Typography>
-                          </Grid2>
-                        </Grid2>
+                          </Grid>
+                        </Grid>
 
                         {/* 全体進捗 */}
                         <Box sx={{ mt: 2 }}>
@@ -247,10 +245,10 @@ export const ProjectTeamList: React.FC<ProjectTeamListProps> = ({
                     </CardContent>
                   </CardActionArea>
                 </Card>
-              </Grid2>
+              </Grid>
             );
           })}
-        </Grid2>
+        </Grid>
 
         {/* 選択されたチームの詳細情報 */}
         {selectedTeamId && (

@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react';
 import { useAppStore } from '../../stores/useAppStore';
 import type { StickyNote } from '../../types/stickyNote';
-import type { Task } from '../../types/task';
+// import type { Task } from '../../types/task';
 
 // 付箋管理の設定
 export interface StickyNoteManagerConfig {
@@ -185,7 +185,7 @@ export const StickyNoteManager: React.FC<StickyNoteManagerProps> = ({
   const [hasChanges, setHasChanges] = useState(false);
   
   // 自動保存タイマー
-  const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const { selectedProjectId } = useAppStore();
 
   // 変更通知
@@ -422,7 +422,7 @@ export const StickyNoteManager: React.FC<StickyNoteManagerProps> = ({
   // 選択管理
   const selectNote = useCallback((id: string, multiSelect = false) => {
     setSelectedNoteIds(prev => {
-      const newSet = multiSelect ? new Set(prev) : new Set();
+      const newSet: Set<string> = multiSelect ? new Set(prev) : new Set<string>();
       
       if (newSet.has(id)) {
         newSet.delete(id);

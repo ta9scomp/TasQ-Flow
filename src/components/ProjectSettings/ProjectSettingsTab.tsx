@@ -27,9 +27,8 @@ import {
   Chip,
   Divider,
   Alert,
-  Tooltip,
 } from '@mui/material';
-import Grid2 from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 
 import {
   Group as GroupIcon,
@@ -43,7 +42,6 @@ import {
   Person as PersonIcon,
   AdminPanelSettings as AdminIcon,
   Visibility as ViewIcon,
-  VisibilityOff as HideIcon,
   Save as SaveIcon,
   Cancel as CancelIcon,
 } from '@mui/icons-material';
@@ -136,6 +134,7 @@ export const ProjectSettingsTab: React.FC<ProjectSettingsTabProps> = ({
       const member: Member = {
         id: `member_${Date.now()}`,
         name: newMember.name,
+        email: `${newMember.name.toLowerCase()}@company.com`,
         role: newMember.role as any,
         color: newMember.color,
         avatar: '',
@@ -260,10 +259,10 @@ export const ProjectSettingsTab: React.FC<ProjectSettingsTabProps> = ({
                       secondary={
                         <Box>
                           <Typography variant="body2" color="text.secondary">
-                            権限: {member.permissions.length}個
+                            権限: {member.permissions?.length || 0}個
                           </Typography>
                           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
-                            {member.permissions.slice(0, 3).map(perm => (
+                            {(member.permissions || []).slice(0, 3).map(perm => (
                               <Chip 
                                 key={perm} 
                                 label={permissions.find(p => p.id === perm)?.label || perm}
@@ -271,9 +270,9 @@ export const ProjectSettingsTab: React.FC<ProjectSettingsTabProps> = ({
                                 variant="outlined" 
                               />
                             ))}
-                            {member.permissions.length > 3 && (
+                            {(member.permissions?.length || 0) > 3 && (
                               <Chip 
-                                label={`+${member.permissions.length - 3}`}
+                                label={`+${(member.permissions?.length || 0) - 3}`}
                                 size="small" 
                                 variant="outlined" 
                               />
@@ -314,38 +313,38 @@ export const ProjectSettingsTab: React.FC<ProjectSettingsTabProps> = ({
           
           <Paper sx={{ overflow: 'auto' }}>
             <Box sx={{ minWidth: 800, p: 2 }}>
-              <Grid2 container spacing={2}>
-                <Grid2 size={3}>
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 3 }}>
                   <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>
                     メンバー
                   </Typography>
-                </Grid2>
+                </Grid>
                 {['task', 'admin', 'design', 'data'].map(category => (
-                  <Grid2 size={2} key={category}>
+                  <Grid size={{ xs: 2 }} key={category}>
                     <Typography variant="subtitle2" sx={{ fontWeight: 'bold', textAlign: 'center' }}>
                       {category === 'task' && 'タスク'}
                       {category === 'admin' && '管理'}
                       {category === 'design' && 'デザイン'}
                       {category === 'data' && 'データ'}
                     </Typography>
-                  </Grid2>
+                  </Grid>
                 ))}
-              </Grid2>
+              </Grid>
               
               <Divider sx={{ my: 2 }} />
               
               {members.map(member => (
-                <Grid2 container spacing={2} key={member.id} sx={{ mb: 2 }}>
-                  <Grid2 size={3}>
+                <Grid container spacing={2} key={member.id} sx={{ mb: 2 }}>
+                  <Grid size={{ xs: 3 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <Avatar sx={{ bgcolor: member.color, width: 24, height: 24, fontSize: '0.8rem' }}>
                         {member.name.charAt(0)}
                       </Avatar>
                       <Typography variant="body2">{member.name}</Typography>
                     </Box>
-                  </Grid2>
+                  </Grid>
                   {['task', 'admin', 'design', 'data'].map(category => (
-                    <Grid2 size={2} key={category}>
+                    <Grid size={{ xs: 2 }} key={category}>
                       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                         {getPermissionsByCategory(category).map(permission => (
                           <FormControlLabel
@@ -353,14 +352,14 @@ export const ProjectSettingsTab: React.FC<ProjectSettingsTabProps> = ({
                             control={
                               <Switch
                                 size="small"
-                                checked={member.permissions.includes(permission.id)}
+                                checked={(member.permissions || []).includes(permission.id)}
                                 onChange={(e) => {
                                   const updatedMembers = members.map(m => {
                                     if (m.id === member.id) {
                                       if (e.target.checked) {
-                                        return { ...m, permissions: [...m.permissions, permission.id] };
+                                        return { ...m, permissions: [...(m.permissions || []), permission.id] };
                                       } else {
-                                        return { ...m, permissions: m.permissions.filter(p => p !== permission.id) };
+                                        return { ...m, permissions: (m.permissions || []).filter(p => p !== permission.id) };
                                       }
                                     }
                                     return m;
@@ -373,9 +372,9 @@ export const ProjectSettingsTab: React.FC<ProjectSettingsTabProps> = ({
                           />
                         ))}
                       </Box>
-                    </Grid2>
+                    </Grid>
                   ))}
-                </Grid2>
+                </Grid>
               ))}
             </Box>
           </Paper>
@@ -389,9 +388,9 @@ export const ProjectSettingsTab: React.FC<ProjectSettingsTabProps> = ({
           
           <Paper sx={{ p: 3, mb: 3 }}>
             <Typography variant="subtitle1" sx={{ mb: 2 }}>カラープリセット</Typography>
-            <Grid2 container spacing={1}>
+            <Grid container spacing={1}>
               {colorPresets.map(color => (
-                <Grid2 key={color}>
+                <Grid size="auto" key={color}>
                   <Box
                     sx={{
                       width: 40,
@@ -406,9 +405,9 @@ export const ProjectSettingsTab: React.FC<ProjectSettingsTabProps> = ({
                     }}
                     onClick={() => setProjectSettings(prev => ({ ...prev, defaultTaskColor: color }))}
                   />
-                </Grid2>
+                </Grid>
               ))}
-            </Grid2>
+            </Grid>
           </Paper>
 
           <Paper sx={{ p: 3 }}>
@@ -457,16 +456,16 @@ export const ProjectSettingsTab: React.FC<ProjectSettingsTabProps> = ({
           <Typography variant="h6" sx={{ mb: 3 }}>プロジェクト設定</Typography>
           
           <Paper sx={{ p: 3 }}>
-            <Grid2 container spacing={3}>
-              <Grid2 size={{ xs: 12, md: 6 }}>
+            <Grid container spacing={3}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   fullWidth
                   label="プロジェクト名"
                   value={projectSettings.name}
                   onChange={(e) => setProjectSettings(prev => ({ ...prev, name: e.target.value }))}
                 />
-              </Grid2>
-              <Grid2 size={{ xs: 12, md: 6 }}>
+              </Grid>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   fullWidth
                   label="デフォルト優先度"
@@ -475,8 +474,8 @@ export const ProjectSettingsTab: React.FC<ProjectSettingsTabProps> = ({
                   onChange={(e) => setProjectSettings(prev => ({ ...prev, defaultPriority: parseInt(e.target.value) }))}
                   inputProps={{ min: 0, max: 100 }}
                 />
-              </Grid2>
-              <Grid2 size={12}>
+              </Grid>
+              <Grid size={{ xs: 12 }}>
                 <TextField
                   fullWidth
                   multiline
@@ -485,12 +484,12 @@ export const ProjectSettingsTab: React.FC<ProjectSettingsTabProps> = ({
                   value={projectSettings.description}
                   onChange={(e) => setProjectSettings(prev => ({ ...prev, description: e.target.value }))}
                 />
-              </Grid2>
+              </Grid>
               
-              <Grid2 size={12}>
+              <Grid size={{ xs: 12 }}>
                 <Typography variant="subtitle1" sx={{ mb: 2 }}>機能設定</Typography>
-                <Grid2 container spacing={2}>
-                  <Grid2 size={{ xs: 12, sm: 6 }}>
+                <Grid container spacing={2}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <FormControlLabel
                       control={
                         <Switch
@@ -500,8 +499,8 @@ export const ProjectSettingsTab: React.FC<ProjectSettingsTabProps> = ({
                       }
                       label="自動カラー補正"
                     />
-                  </Grid2>
-                  <Grid2 size={{ xs: 12, sm: 6 }}>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <FormControlLabel
                       control={
                         <Switch
@@ -511,8 +510,8 @@ export const ProjectSettingsTab: React.FC<ProjectSettingsTabProps> = ({
                       }
                       label="タスクフォグ機能"
                     />
-                  </Grid2>
-                  <Grid2 size={{ xs: 12, sm: 6 }}>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <FormControlLabel
                       control={
                         <Switch
@@ -522,8 +521,8 @@ export const ProjectSettingsTab: React.FC<ProjectSettingsTabProps> = ({
                       }
                       label="チェックリスト履歴"
                     />
-                  </Grid2>
-                  <Grid2 size={{ xs: 12, sm: 6 }}>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <FormControlLabel
                       control={
                         <Switch
@@ -533,8 +532,8 @@ export const ProjectSettingsTab: React.FC<ProjectSettingsTabProps> = ({
                       }
                       label="ヒートマップ表示"
                     />
-                  </Grid2>
-                  <Grid2 size={{ xs: 12, sm: 6 }}>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <FormControlLabel
                       control={
                         <Switch
@@ -544,8 +543,8 @@ export const ProjectSettingsTab: React.FC<ProjectSettingsTabProps> = ({
                       }
                       label="競合検知"
                     />
-                  </Grid2>
-                  <Grid2 size={{ xs: 12, sm: 6 }}>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <FormControlLabel
                       control={
                         <Switch
@@ -555,11 +554,11 @@ export const ProjectSettingsTab: React.FC<ProjectSettingsTabProps> = ({
                       }
                       label="モバイル時ライトモード"
                     />
-                  </Grid2>
-                </Grid2>
-              </Grid2>
+                  </Grid>
+                </Grid>
+              </Grid>
 
-              <Grid2 size={12}>
+              <Grid size={{ xs: 12 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
                   <Button variant="outlined" startIcon={<CancelIcon />}>
                     キャンセル
@@ -568,8 +567,8 @@ export const ProjectSettingsTab: React.FC<ProjectSettingsTabProps> = ({
                     設定を保存
                   </Button>
                 </Box>
-              </Grid2>
-            </Grid2>
+              </Grid>
+            </Grid>
           </Paper>
         </Box>
       )}
@@ -577,18 +576,18 @@ export const ProjectSettingsTab: React.FC<ProjectSettingsTabProps> = ({
       {/* パフォーマンステストタブ */}
       {selectedTab === 4 && (
         <Box>
-          <Grid2 container spacing={3}>
-            <Grid2 size={12}>
+          <Grid container spacing={3}>
+            <Grid size={{ xs: 12 }}>
               <PerformanceTestPanel />
-            </Grid2>
-            <Grid2 size={12}>
+            </Grid>
+            <Grid size={{ xs: 12 }}>
               <PerformanceOptimizationSettings 
                 onSettingsChange={(settings) => {
                   console.log('Performance settings changed:', settings);
                 }}
               />
-            </Grid2>
-          </Grid2>
+            </Grid>
+          </Grid>
         </Box>
       )}
 
@@ -596,16 +595,16 @@ export const ProjectSettingsTab: React.FC<ProjectSettingsTabProps> = ({
       <Dialog open={addMemberOpen} onClose={() => setAddMemberOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>新しいメンバーを追加</DialogTitle>
         <DialogContent>
-          <Grid2 container spacing={2} sx={{ mt: 1 }}>
-            <Grid2 size={12}>
+          <Grid container spacing={2} sx={{ mt: 1 }}>
+            <Grid size={{ xs: 12 }}>
               <TextField
                 fullWidth
                 label="名前"
                 value={newMember.name}
                 onChange={(e) => setNewMember(prev => ({ ...prev, name: e.target.value }))}
               />
-            </Grid2>
-            <Grid2 size={{ xs: 12, sm: 6 }}>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <FormControl fullWidth>
                 <InputLabel>役割</InputLabel>
                 <Select
@@ -622,8 +621,8 @@ export const ProjectSettingsTab: React.FC<ProjectSettingsTabProps> = ({
                   ))}
                 </Select>
               </FormControl>
-            </Grid2>
-            <Grid2 size={{ xs: 12, sm: 6 }}>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
                 label="カラー"
@@ -631,8 +630,8 @@ export const ProjectSettingsTab: React.FC<ProjectSettingsTabProps> = ({
                 value={newMember.color}
                 onChange={(e) => setNewMember(prev => ({ ...prev, color: e.target.value }))}
               />
-            </Grid2>
-          </Grid2>
+            </Grid>
+          </Grid>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setAddMemberOpen(false)}>キャンセル</Button>
@@ -645,16 +644,16 @@ export const ProjectSettingsTab: React.FC<ProjectSettingsTabProps> = ({
         <DialogTitle>メンバー編集</DialogTitle>
         <DialogContent>
           {selectedMember && (
-            <Grid2 container spacing={2} sx={{ mt: 1 }}>
-              <Grid2 size={12}>
+            <Grid container spacing={2} sx={{ mt: 1 }}>
+              <Grid size={{ xs: 12 }}>
                 <TextField
                   fullWidth
                   label="名前"
                   value={selectedMember.name}
                   onChange={(e) => setSelectedMember(prev => prev ? { ...prev, name: e.target.value } : null)}
                 />
-              </Grid2>
-              <Grid2 size={{ xs: 12, sm: 6 }}>
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <FormControl fullWidth>
                   <InputLabel>役割</InputLabel>
                   <Select
@@ -671,8 +670,8 @@ export const ProjectSettingsTab: React.FC<ProjectSettingsTabProps> = ({
                     ))}
                   </Select>
                 </FormControl>
-              </Grid2>
-              <Grid2 size={{ xs: 12, sm: 6 }}>
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   label="カラー"
@@ -680,8 +679,8 @@ export const ProjectSettingsTab: React.FC<ProjectSettingsTabProps> = ({
                   value={selectedMember.color}
                   onChange={(e) => setSelectedMember(prev => prev ? { ...prev, color: e.target.value } : null)}
                 />
-              </Grid2>
-              <Grid2 size={12}>
+              </Grid>
+              <Grid size={{ xs: 12 }}>
                 <FormControlLabel
                   control={
                     <Switch
@@ -691,8 +690,8 @@ export const ProjectSettingsTab: React.FC<ProjectSettingsTabProps> = ({
                   }
                   label="アクティブ"
                 />
-              </Grid2>
-            </Grid2>
+              </Grid>
+            </Grid>
           )}
         </DialogContent>
         <DialogActions>

@@ -38,7 +38,6 @@ import {
   History as HistoryIcon,
   StarBorder as StarBorderIcon,
   Delete as DeleteIcon,
-  MoreVert as MoreVertIcon,
 } from '@mui/icons-material';
 
 import { useTranslation } from '../../i18n';

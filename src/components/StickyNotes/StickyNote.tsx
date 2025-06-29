@@ -33,7 +33,7 @@ export const StickyNote: React.FC<StickyNoteProps> = ({
 }) => {
   const [isDragging, setIsDragging] = React.useState(false);
   const [dragStart, setDragStart] = React.useState({ x: 0, y: 0 });
-  const [isEditing, setIsEditing] = React.useState(false);
+  const [_isEditing, setIsEditing] = React.useState(false);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
   const handleMouseDown = (event: React.MouseEvent) => {

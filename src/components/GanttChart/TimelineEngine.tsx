@@ -383,13 +383,13 @@ export const TimelineEngine: React.FC<TimelineEngineProps> = ({
   }, [animationState, scrollOffset, scale, applyEasing]);
 
   // スクロール終了検出とスナップトリガー
-  const scrollEndTimer = useRef<number>();
+  const scrollEndTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const triggerSnapAfterScrollEnd = useCallback(() => {
     if (scrollEndTimer.current) {
       clearTimeout(scrollEndTimer.current);
     }
     
-    scrollEndTimer.current = window.setTimeout(() => {
+    scrollEndTimer.current = setTimeout(() => {
       animateSnapToMonth(months);
     }, 150); // 150ms待機後にスナップ
   }, [animateSnapToMonth, months]);

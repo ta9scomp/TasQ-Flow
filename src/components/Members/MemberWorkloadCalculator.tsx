@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { differenceInDays, isWithinInterval, parseISO, startOfDay, endOfDay } from 'date-fns';
+import { differenceInDays, isWithinInterval, parseISO, startOfDay } from 'date-fns';
 import type { Member, Task } from '../../types/task';
 
 // 稼働率計算方法の種類
@@ -117,11 +117,6 @@ export const MemberWorkloadCalculator: React.FC<MemberWorkloadCalculatorProps> =
       }
 
       // その日のタスクを取得
-      const dayInterval = {
-        start: startOfDay(currentDate),
-        end: endOfDay(currentDate),
-      };
-
       const activeTasks = memberTasks.filter(task => {
         const taskStart = typeof task.startDate === 'string' 
           ? parseISO(task.startDate) : task.startDate;
@@ -222,7 +217,7 @@ function calculateTaskCountBased(activeTasks: Task[], factors: WorkloadFactors):
 // 優先度重み付き計算
 function calculatePriorityWeighted(
   activeTasks: Task[], 
-  completedTasks: Task[], 
+  _completedTasks: Task[], 
   factors: WorkloadFactors
 ): number {
   let totalLoad = 0;

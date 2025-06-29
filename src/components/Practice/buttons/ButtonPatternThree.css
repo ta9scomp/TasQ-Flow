@@ -1,0 +1,218 @@
+/* Space Button - Pattern 3 */
+.pattern-three-button {
+  width: 150px !important;
+  height: 150px !important;
+  position: relative !important;
+  overflow: hidden !important;
+  border: 0 !important;
+  outline: 0 !important;
+  border-radius: 11px !important;
+  background: #03001e !important;
+  background: linear-gradient(80deg, #ffcbf2, #ec38bc, #7303c0, #03001e) !important;
+  cursor: pointer !important;
+  min-width: 150px !important;
+}
+
+/* ボタンコンテナ効果 */
+.pattern-three-container {
+  width: 150px;
+  height: 150px;
+  position: relative;
+  overflow: visible;
+}
+
+.pattern-three-container::after {
+  content: "";
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  left: 0;
+  top: 20px;
+  z-index: -1;
+  background: #03001e;
+  background: linear-gradient(80deg, #ffcbf2, #ec38bc, #7303c0, #03001e);
+  filter: blur(20px);
+  opacity: 0;
+  border-radius: 11px;
+  transition: all 0.6s cubic-bezier(0.15, 0.83, 0.66, 1);
+}
+
+/* ホバー効果 */
+.pattern-three-container:hover {
+  transform: scale(1.05);
+  transition: all 0.6s cubic-bezier(0.15, 0.83, 0.66, 1);
+}
+
+.pattern-three-container:hover::after {
+  transition: all 0.6s cubic-bezier(0.15, 0.83, 0.66, 1);
+  opacity: 1;
+}
+
+/* アクティブ効果 */
+.pattern-three-container:active {
+  transform: scale(1);
+}
+
+.pattern-three-container:active::after {
+  opacity: 0;
+}
+
+/* テキストスタイル */
+.pattern-three-button span {
+  color: white !important;
+  font-weight: 700 !important;
+  font-size: 16px !important;
+  position: relative !important;
+  z-index: 30 !important;
+}
+
+/* 星のスタイル */
+.pattern-three-button .star {
+  width: 2px;
+  height: 2px;
+  background-color: white;
+  border-radius: 50%;
+  position: absolute;
+  animation: blink 4s ease-in-out infinite;
+  /* アンチエイリアシングとスムーズな描画 */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  will-change: opacity, box-shadow;
+}
+
+/* 流れ星の設定変数 */
+:root {
+  --shooting-star-angle: -35deg; /* 流れ星の角度（軌道と跡の両方に適用） */
+  --shooting-star-length: 60px; /* 流星跡の長さ */
+  --shooting-star-thickness: 1px; /* 流星跡の太さ */
+  --shooting-star-move-x: 140px; /* X方向の移動距離 */
+  --shooting-star-move-y: 160px; /* Y方向の移動距離 */
+}
+
+/* 流れ星のスタイル */
+.pattern-three-button .shooting-star {
+  width: var(--shooting-star-length);
+  height: var(--shooting-star-thickness);
+  position: absolute;
+  background: linear-gradient(90deg, #ffffffff, #ffffff00);
+  border-radius: 50%;
+  transform: rotate(var(--shooting-star-angle));
+  opacity: 0;
+  /* GPU加速とスムーズな描画 */
+  transform-origin: center;
+  backface-visibility: hidden;
+  will-change: transform, opacity;
+}
+
+.pattern-three-button .shooting-star-1 {
+  animation: fallingStar1 3s 8s ease-out infinite;
+}
+
+.pattern-three-button .shooting-star-2 {
+  animation: fallingStar2 2.5s 15s ease-out infinite;
+}
+
+.pattern-three-button .shooting-star-3 {
+  animation: fallingStar3 3.5s 25s ease-out infinite;
+}
+
+.pattern-three-button .shooting-star-4 {
+  animation: fallingStar4 3s 35s ease-out infinite;
+}
+
+/* アニメーション定義 */
+@keyframes blink {
+  0%, 90%, 100% {
+    box-shadow: 0 0 5px 0 white;
+    opacity: 0.8;
+  }
+  5%, 10% {
+    box-shadow: 0 0 8px 1px white;
+    opacity: 1;
+  }
+}
+
+/* 流れ星の軌道計算（角度に基づいて自動計算） */
+@keyframes fallingStar1 {
+  0% {
+    top: -10px;
+    left: 130px;
+    opacity: 0;
+    transform: rotate(var(--shooting-star-angle)) translateX(0);
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    top: -10px;
+    left: 130px;
+    opacity: 0;
+    transform: rotate(var(--shooting-star-angle)) translateX(var(--shooting-star-move-x));
+  }
+}
+
+@keyframes fallingStar2 {
+  0% {
+    top: 10px;
+    left: 140px;
+    opacity: 0;
+    transform: rotate(var(--shooting-star-angle)) translateX(0);
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    top: 10px;
+    left: 140px;
+    opacity: 0;
+    transform: rotate(var(--shooting-star-angle)) translateX(var(--shooting-star-move-x));
+  }
+}
+
+@keyframes fallingStar3 {
+  0% {
+    top: 30px;
+    left: 150px;
+    opacity: 0;
+    transform: rotate(var(--shooting-star-angle)) translateX(0);
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    top: 30px;
+    left: 150px;
+    opacity: 0;
+    transform: rotate(var(--shooting-star-angle)) translateX(var(--shooting-star-move-x));
+  }
+}
+
+@keyframes fallingStar4 {
+  0% {
+    top: 50px;
+    left: 160px;
+    opacity: 0;
+    transform: rotate(var(--shooting-star-angle)) translateX(0);
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    top: 50px;
+    left: 160px;
+    opacity: 0;
+    transform: rotate(var(--shooting-star-angle)) translateX(var(--shooting-star-move-x));
+  }
+}

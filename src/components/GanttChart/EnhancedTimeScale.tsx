@@ -43,7 +43,7 @@ export const EnhancedTimeScale: React.FC<EnhancedTimeScaleProps> = ({
   const [languageMenuAnchor, setLanguageMenuAnchor] = useState<HTMLElement | null>(null);
   
   const monthsRef = useRef<Map<string, { element: HTMLElement; startDay: number; endDay: number }>>(new Map());
-  const snapTimeoutRef = useRef<number | null>(null);
+  const snapTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastScrollRef = useRef(0);
   const scrollVelocityRef = useRef(0);
 

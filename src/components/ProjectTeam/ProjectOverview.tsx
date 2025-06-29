@@ -9,14 +9,12 @@ import {
   Tooltip,
   Card,
   CardContent,
-  Divider,
 } from '@mui/material';
-import Grid2 from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 
 import {
   Assignment as ProjectIcon,
   Person as PersonIcon,
-  CalendarToday as CalendarIcon,
   TrendingUp as ProgressIcon,
 } from '@mui/icons-material';
 import { getProjectsByTeamId, getProjectTeamById } from '../../data/sampleProjectTeams';
@@ -144,8 +142,8 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
       </Box>
 
       {/* プロジェクト統計 */}
-      <Grid2 container spacing={2} sx={{ mb: 3 }}>
-        <Grid2 size={{ xs: 6, sm: 3 }}>
+      <Grid container spacing={2} sx={{ mb: 3 }}>
+        <Grid size={{ xs: 6, sm: 3 }}>
           <Card variant="outlined">
             <CardContent sx={{ textAlign: 'center', py: 2 }}>
               <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
@@ -156,8 +154,8 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
               </Typography>
             </CardContent>
           </Card>
-        </Grid2>
-        <Grid2 size={{ xs: 6, sm: 3 }}>
+        </Grid>
+        <Grid size={{ xs: 6, sm: 3 }}>
           <Card variant="outlined">
             <CardContent sx={{ textAlign: 'center', py: 2 }}>
               <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'success.main' }}>
@@ -168,8 +166,8 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
               </Typography>
             </CardContent>
           </Card>
-        </Grid2>
-        <Grid2 size={{ xs: 6, sm: 3 }}>
+        </Grid>
+        <Grid size={{ xs: 6, sm: 3 }}>
           <Card variant="outlined">
             <CardContent sx={{ textAlign: 'center', py: 2 }}>
               <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'info.main' }}>
@@ -180,8 +178,8 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
               </Typography>
             </CardContent>
           </Card>
-        </Grid2>
-        <Grid2 size={{ xs: 6, sm: 3 }}>
+        </Grid>
+        <Grid size={{ xs: 6, sm: 3 }}>
           <Card variant="outlined">
             <CardContent sx={{ textAlign: 'center', py: 2 }}>
               <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'success.main' }}>
@@ -192,8 +190,8 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
               </Typography>
             </CardContent>
           </Card>
-        </Grid2>
-      </Grid2>
+        </Grid>
+      </Grid>
 
       {/* プロジェクトガントチャート */}
       <Paper sx={{ overflow: 'hidden' }}>
@@ -450,8 +448,8 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
                   </Box>
                 </Box>
 
-                <Grid2 container spacing={3}>
-                  <Grid2 size={{ xs: 12, md: 6 }}>
+                <Grid container spacing={3}>
+                  <Grid size={{ xs: 12, md: 6 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                       <ProgressIcon color="primary" />
                       <Typography variant="body2" color="text.secondary">
@@ -476,9 +474,9 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
                         color: 'white',
                       }}
                     />
-                  </Grid2>
+                  </Grid>
 
-                  <Grid2 size={{ xs: 12, md: 6 }}>
+                  <Grid size={{ xs: 12, md: 6 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                       <PersonIcon color="primary" />
                       <Typography variant="body2" color="text.secondary">
@@ -509,8 +507,8 @@ export const ProjectOverview: React.FC<ProjectOverviewProps> = ({
                         </Avatar>
                       )}
                     </Box>
-                  </Grid2>
-                </Grid2>
+                  </Grid>
+                </Grid>
               </Box>
             );
           })()}

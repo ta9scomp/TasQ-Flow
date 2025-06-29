@@ -1,11 +1,9 @@
 import React from 'react';
 import {
   Box,
-  Paper,
   Typography,
   Switch,
   FormControlLabel,
-  Divider,
   Card,
   CardContent,
   CardHeader,
@@ -34,7 +32,7 @@ import {
   ToggleButton,
   ToggleButtonGroup,
 } from '@mui/material';
-import Grid2 from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 
 import {
   Palette as PaletteIcon,
@@ -46,7 +44,6 @@ import {
   Add as AddIcon,
   AdminPanelSettings as AdminIcon,
   Person as PersonIcon,
-  Language as LanguageIcon,
   DarkMode as DarkModeIcon,
   LightMode as LightModeIcon,
   Sync as SyncIcon,
@@ -108,7 +105,7 @@ export const SettingsTab: React.FC = () => {
     { name: '色覚対応', colors: ['#1976D2', '#388E3C', '#F57C00', '#7B1FA2'] },
   ]);
 
-  const [isAdmin, setIsAdmin] = React.useState(false); // 実際のアプリではユーザー権限から取得
+  const [isAdmin] = React.useState(false); // 実際のアプリではユーザー権限から取得
 
   const [newPresetDialog, setNewPresetDialog] = React.useState(false);
   const [newPresetName, setNewPresetName] = React.useState('');
@@ -244,8 +241,8 @@ export const SettingsTab: React.FC = () => {
 
       {/* プロフィールタブ */}
       {currentTab === 0 && (
-        <Grid2 container spacing={3}>
-          <Grid2 size={{ xs: 12, md: 4 }}>
+        <Grid container spacing={3}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Card>
               <CardContent sx={{ textAlign: 'center' }}>
                 <Badge
@@ -286,9 +283,9 @@ export const SettingsTab: React.FC = () => {
                 />
               </CardContent>
             </Card>
-          </Grid2>
+          </Grid>
           
-          <Grid2 size={{ xs: 12, md: 8 }}>
+          <Grid size={{ xs: 12, md: 8 }}>
             <Card>
               <CardHeader title="基本情報" />
               <CardContent>
@@ -318,16 +315,16 @@ export const SettingsTab: React.FC = () => {
                 />
               </CardContent>
             </Card>
-          </Grid2>
-        </Grid2>
+          </Grid>
+        </Grid>
       )}
 
       {/* 表示設定タブ */}
       {currentTab === 1 && (
 
-        <Grid2 container spacing={3}>
+        <Grid container spacing={3}>
           {/* テーマ設定 */}
-          <Grid2 size={{ xs: 12, md: 6 }}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card>
               <CardHeader
                 avatar={<PaletteIcon />}
@@ -370,10 +367,10 @@ export const SettingsTab: React.FC = () => {
                 </FormControl>
               </CardContent>
             </Card>
-          </Grid2>
+          </Grid>
 
           {/* パフォーマンス設定 */}
-          <Grid2 size={{ xs: 12, md: 6 }}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card>
               <CardHeader
                 avatar={<SpeedIcon />}
@@ -431,10 +428,10 @@ export const SettingsTab: React.FC = () => {
               />
             </CardContent>
           </Card>
-        </Grid2>
+        </Grid>
 
           {/* 検索設定 */}
-          <Grid2 size={{ xs: 12, md: 6 }}>
+          <Grid size={{ xs: 12, md: 6 }}>
           <Card>
             <CardHeader
               title="検索設定"
@@ -463,14 +460,14 @@ export const SettingsTab: React.FC = () => {
               />
             </CardContent>
           </Card>
-        </Grid2>
-        </Grid2>
+        </Grid>
+        </Grid>
       )}
 
       {/* 通知設定タブ */}
       {currentTab === 2 && (
-        <Grid2 container spacing={3}>
-          <Grid2 size={{ xs: 12, md: 6 }}>
+        <Grid container spacing={3}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card>
               <CardHeader
                 avatar={<NotificationsIcon />}
@@ -525,9 +522,9 @@ export const SettingsTab: React.FC = () => {
               />
             </CardContent>
           </Card>
-        </Grid2>
+        </Grid>
 
-          <Grid2 size={{ xs: 12, md: 6 }}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card>
               <CardHeader
                 title="リアルタイム通知"
@@ -561,14 +558,14 @@ export const SettingsTab: React.FC = () => {
                 </Typography>
               </CardContent>
             </Card>
-          </Grid2>
-        </Grid2>
+          </Grid>
+        </Grid>
       )}
 
       {/* プライバシー設定タブ */}
       {currentTab === 3 && (
-        <Grid2 container spacing={3}>
-          <Grid2 size={{ xs: 12, md: 6 }}>
+        <Grid container spacing={3}>
+          <Grid size={{ xs: 12, md: 6 }}>
           <Card>
             <CardHeader
               avatar={<SecurityIcon />}
@@ -593,9 +590,9 @@ export const SettingsTab: React.FC = () => {
               </Typography>
             </CardContent>
           </Card>
-        </Grid2>
+        </Grid>
 
-          <Grid2 size={{ xs: 12, md: 6 }}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card>
               <CardHeader
                 title="オンラインステータス"
@@ -629,15 +626,15 @@ export const SettingsTab: React.FC = () => {
                 </Typography>
               </CardContent>
             </Card>
-          </Grid2>
-        </Grid2>
+          </Grid>
+        </Grid>
       )}
 
       {/* 高度な設定タブ */}
       {currentTab === 4 && (
-        <Grid2 container spacing={3}>
+        <Grid container spacing={3}>
           {/* 同期設定 */}
-          <Grid2 size={{ xs: 12, md: 6 }}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card>
               <CardHeader
                 avatar={<SyncIcon />}
@@ -686,10 +683,10 @@ export const SettingsTab: React.FC = () => {
                 />
               </CardContent>
             </Card>
-          </Grid2>
+          </Grid>
 
           {/* データ管理 */}
-          <Grid2 size={{ xs: 12, md: 6 }}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card>
               <CardHeader
                 title="データ管理"
@@ -725,10 +722,10 @@ export const SettingsTab: React.FC = () => {
                 </Alert>
               </CardContent>
             </Card>
-          </Grid2>
+          </Grid>
 
           {/* カラープリセット管理 */}
-          <Grid2 size={12}>
+          <Grid size={{ xs: 12 }}>
             <Card>
               <CardHeader
                 title="カラープリセット管理"
@@ -776,10 +773,10 @@ export const SettingsTab: React.FC = () => {
                 </List>
               </CardContent>
             </Card>
-          </Grid2>
+          </Grid>
 
           {/* 開発者設定 */}
-          <Grid2 size={12}>
+          <Grid size={{ xs: 12 }}>
             <Card>
               <CardHeader
                 avatar={<CodeIcon />}
@@ -818,8 +815,8 @@ export const SettingsTab: React.FC = () => {
                 </Typography>
               </CardContent>
             </Card>
-          </Grid2>
-        </Grid2>
+          </Grid>
+        </Grid>
       )}
 
       {/* 管理者設定タブ */}

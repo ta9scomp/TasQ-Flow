@@ -14,7 +14,6 @@ import {
   MenuItem,
   Slider,
   Typography,
-  Grid2,
   Autocomplete,
   FormControlLabel,
   Switch,
@@ -26,6 +25,7 @@ import {
   Checkbox,
   IconButton,
 } from '@mui/material';
+import Grid from '@mui/material/Grid';
 import { Add as AddIcon, Delete as DeleteIcon, DragIndicator } from '@mui/icons-material';
 
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -90,6 +90,9 @@ export const TaskEditDialog: React.FC<TaskEditDialogProps> = ({
     setEditedTask(prev => prev ? {
       ...prev,
       borderStyle: {
+        width: '1px',
+        color: '#000000',
+        style: 'solid',
         ...prev.borderStyle,
         [field]: value,
       }
@@ -146,18 +149,18 @@ export const TaskEditDialog: React.FC<TaskEditDialogProps> = ({
         <DialogTitle>タスク編集</DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 2 }}>
-            <Grid2 container spacing={3}>
+            <Grid container spacing={3}>
               {/* 基本情報 */}
-              <Grid2 size={12}>
+              <Grid size={{ xs: 12 }}>
                 <TextField
                   fullWidth
                   label="タスク名"
                   value={editedTask.title}
                   onChange={(e) => handleInputChange('title', e.target.value)}
                 />
-              </Grid2>
+              </Grid>
 
-              <Grid2 size={12}>
+              <Grid size={{ xs: 12 }}>
                 <TextField
                   fullWidth
                   multiline
@@ -166,29 +169,29 @@ export const TaskEditDialog: React.FC<TaskEditDialogProps> = ({
                   value={editedTask.description || ''}
                   onChange={(e) => handleInputChange('description', e.target.value)}
                 />
-              </Grid2>
+              </Grid>
 
               {/* 日程 */}
-              <Grid2 size={6}>
+              <Grid size={{ xs: 6 }}>
                 <DatePicker
                   label="開始日"
                   value={editedTask.startDate}
                   onChange={(date) => handleInputChange('startDate', date)}
                   slotProps={{ textField: { fullWidth: true } }}
                 />
-              </Grid2>
+              </Grid>
 
-              <Grid2 size={6}>
+              <Grid size={{ xs: 6 }}>
                 <DatePicker
                   label="終了日"
                   value={editedTask.endDate}
                   onChange={(date) => handleInputChange('endDate', date)}
                   slotProps={{ textField: { fullWidth: true } }}
                 />
-              </Grid2>
+              </Grid>
 
               {/* ステータスと進捗 */}
-              <Grid2 size={6}>
+              <Grid size={{ xs: 6 }}>
                 <FormControl fullWidth>
                   <InputLabel>ステータス</InputLabel>
                   <Select
@@ -203,9 +206,9 @@ export const TaskEditDialog: React.FC<TaskEditDialogProps> = ({
                     ))}
                   </Select>
                 </FormControl>
-              </Grid2>
+              </Grid>
 
-              <Grid2 size={6}>
+              <Grid size={{ xs: 6 }}>
                 <Typography gutterBottom>進捗: {editedTask.progress}%</Typography>
                 <Slider
                   value={editedTask.progress}
@@ -214,10 +217,10 @@ export const TaskEditDialog: React.FC<TaskEditDialogProps> = ({
                   min={0}
                   max={100}
                 />
-              </Grid2>
+              </Grid>
 
               {/* 優先度 */}
-              <Grid2 size={12}>
+              <Grid size={{ xs: 12 }}>
                 <Typography gutterBottom>
                   優先度: {editedTask.priority}
                   <Chip
@@ -248,10 +251,10 @@ export const TaskEditDialog: React.FC<TaskEditDialogProps> = ({
                     { value: 100, label: '100' },
                   ]}
                 />
-              </Grid2>
+              </Grid>
 
               {/* 担当者 */}
-              <Grid2 size={12}>
+              <Grid size={{ xs: 12 }}>
                 <Autocomplete
                   multiple
                   options={members.map(m => m.name)}
@@ -275,10 +278,10 @@ export const TaskEditDialog: React.FC<TaskEditDialogProps> = ({
                     />
                   )}
                 />
-              </Grid2>
+              </Grid>
 
               {/* タグ */}
-              <Grid2 size={12}>
+              <Grid size={{ xs: 12 }}>
                 <Autocomplete
                   multiple
                   freeSolo
@@ -303,12 +306,12 @@ export const TaskEditDialog: React.FC<TaskEditDialogProps> = ({
                     />
                   )}
                 />
-              </Grid2>
+              </Grid>
 
               <Divider sx={{ width: '100%', my: 2 }} />
 
               {/* チェックリスト */}
-              <Grid2 size={12}>
+              <Grid size={{ xs: 12 }}>
                 <Typography variant="h6" gutterBottom>
                   チェックリスト
                 </Typography>
@@ -398,18 +401,18 @@ export const TaskEditDialog: React.FC<TaskEditDialogProps> = ({
                     {editedTask.checklist.filter(item => item.completed).length} / {editedTask.checklist.length} 件完了
                   </Typography>
                 )}
-              </Grid2>
+              </Grid>
 
               <Divider sx={{ width: '100%', my: 2 }} />
 
               {/* 縁取り設定 */}
-              <Grid2 size={12}>
+              <Grid size={{ xs: 12 }}>
                 <Typography variant="h6" gutterBottom>
                   縁取り設定
                 </Typography>
-              </Grid2>
+              </Grid>
 
-              <Grid2 size={4}>
+              <Grid size={{ xs: 4 }}>
                 <FormControl fullWidth>
                   <InputLabel>太さ</InputLabel>
                   <Select
@@ -424,9 +427,9 @@ export const TaskEditDialog: React.FC<TaskEditDialogProps> = ({
                     ))}
                   </Select>
                 </FormControl>
-              </Grid2>
+              </Grid>
 
-              <Grid2 size={4}>
+              <Grid size={{ xs: 4 }}>
                 <FormControl fullWidth>
                   <InputLabel>スタイル</InputLabel>
                   <Select
@@ -441,9 +444,9 @@ export const TaskEditDialog: React.FC<TaskEditDialogProps> = ({
                     ))}
                   </Select>
                 </FormControl>
-              </Grid2>
+              </Grid>
 
-              <Grid2 size={4}>
+              <Grid size={{ xs: 4 }}>
                 <TextField
                   fullWidth
                   label="縁取り色"
@@ -451,10 +454,10 @@ export const TaskEditDialog: React.FC<TaskEditDialogProps> = ({
                   value={editedTask.borderStyle?.color || '#000000'}
                   onChange={(e) => handleBorderStyleChange('color', e.target.value)}
                 />
-              </Grid2>
+              </Grid>
 
               {/* グループ設定 */}
-              <Grid2 size={12}>
+              <Grid size={{ xs: 12 }}>
                 <FormControlLabel
                   control={
                     <Switch
@@ -464,8 +467,8 @@ export const TaskEditDialog: React.FC<TaskEditDialogProps> = ({
                   }
                   label="タスクグループとして設定"
                 />
-              </Grid2>
-            </Grid2>
+              </Grid>
+            </Grid>
           </Box>
         </DialogContent>
         <DialogActions>

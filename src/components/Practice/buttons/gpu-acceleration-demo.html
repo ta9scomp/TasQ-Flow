@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+/* CPU処理（重い） */
+.cpu-animation {
+  width: 50px;
+  height: 50px;
+  background: red;
+  animation: cpu-move 2s infinite;
+}
+
+@keyframes cpu-move {
+  0% { left: 0px; top: 0px; }
+  50% { left: 200px; top: 100px; }
+  100% { left: 0px; top: 0px; }
+}
+
+/* GPU加速（軽い） */
+.gpu-animation {
+  width: 50px;
+  height: 50px;
+  background: blue;
+  animation: gpu-move 2s infinite;
+  /* GPU加速を強制 */
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+@keyframes gpu-move {
+  0% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(200px, 100px, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+
+/* デバッグ用 - レイヤーを可視化 */
+.show-layers {
+  outline: 1px solid rgba(255, 0, 0, 0.5);
+}
+</style>
+</head>
+<body>
+<h2>アニメーション性能比較</h2>
+<p>赤：CPU処理（left/topで移動）</p>
+<div class="cpu-animation" style="position: relative;"></div>
+
+<p>青：GPU加速（transform3dで移動）</p>
+<div class="gpu-animation"></div>
+
+<script>
+// パフォーマンス測定
+function measurePerformance() {
+  const start = performance.now();
+  
+  // フレーム数をカウント
+  let frameCount = 0;
+  function countFrame() {
+    frameCount++;
+    if (performance.now() - start < 1000) {
+      requestAnimationFrame(countFrame);
+    } else {
+      console.log(`FPS: ${frameCount}`);
+    }
+  }
+  requestAnimationFrame(countFrame);
+}
+
+// measurePerformance();
+</script>
+</body>
+</html>

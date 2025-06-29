@@ -23,6 +23,7 @@ import {
   Help as HelpIcon,
   Info as InfoIcon,
   Feedback as FeedbackIcon,
+  Code as CodeIcon,
 } from '@mui/icons-material';
 
 interface RightSidebarProps {
@@ -30,6 +31,7 @@ interface RightSidebarProps {
   width?: number;
   onClose: () => void;
   onNavigateToLearning?: () => void;
+  onNavigateToPractice?: () => void;
 }
 
 export const RightSidebar: React.FC<RightSidebarProps> = ({
@@ -37,6 +39,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
   width = 320,
   onClose,
   onNavigateToLearning,
+  onNavigateToPractice,
 }) => {
   const [darkMode, setDarkMode] = React.useState(false);
   const [autoSave, setAutoSave] = React.useState(true);
@@ -81,6 +84,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
     {
       section: '学習',
       items: [
+        { icon: <CodeIcon />, text: '練習用ページ', badge: null, action: 'practice' },
         { icon: <SettingsIcon />, text: 'React & CSS 学習', badge: 'NEW', action: 'learning' },
       ],
     },
@@ -188,6 +192,8 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                     onClick={() => {
                       if (item.action === 'learning' && onNavigateToLearning) {
                         onNavigateToLearning();
+                      } else if (item.action === 'practice' && onNavigateToPractice) {
+                        onNavigateToPractice();
                       }
                     }}
                   >

@@ -16,7 +16,7 @@ import {
   ListItemSecondaryAction,
   Button,
 } from '@mui/material';
-import Grid2 from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 
 import {
   Visibility as VisibilityIcon,
@@ -60,7 +60,6 @@ export const MemberTab: React.FC<MemberTabProps> = ({
   const getWorkloadPercentage = (memberName: string) => {
     const memberTasks = getMemberTasks(memberName);
     const totalTasks = memberTasks.length;
-    const completedTasks = memberTasks.filter(task => task.status === 'completed').length;
     const inProgressTasks = memberTasks.filter(task => task.status === 'inProgress').length;
     
     // 簡単な稼働率計算（実際の実装ではより詳細な計算が必要）
@@ -139,9 +138,9 @@ export const MemberTab: React.FC<MemberTabProps> = ({
         </Box>
       </Box>
 
-      <Grid2 container spacing={3}>
+      <Grid container spacing={3}>
         {/* メンバー一覧 */}
-        <Grid2 size={{ xs: 12, md: 6 }}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Paper sx={{ p: 2 }}>
             <Typography variant="h6" gutterBottom>
               チームメンバー
@@ -188,10 +187,10 @@ export const MemberTab: React.FC<MemberTabProps> = ({
               ))}
             </List>
           </Paper>
-        </Grid2>
+        </Grid>
 
         {/* メンバー別タスク概要 */}
-        <Grid2 size={{ xs: 12, md: 6 }}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Paper sx={{ p: 2 }}>
             <Typography variant="h6" gutterBottom>
               タスク割当状況
@@ -263,11 +262,11 @@ export const MemberTab: React.FC<MemberTabProps> = ({
                 })}
             </Box>
           </Paper>
-        </Grid2>
+        </Grid>
 
         {/* ヒートマップ説明 */}
         {showHeatmap && (
-          <Grid2 size={12}>
+          <Grid size={{ xs: 12 }}>
             <Paper sx={{ p: 2 }}>
               <Typography variant="h6" gutterBottom>
                 ヒートマップ凡例
@@ -291,9 +290,9 @@ export const MemberTab: React.FC<MemberTabProps> = ({
                 </Box>
               </Box>
             </Paper>
-          </Grid2>
+          </Grid>
         )}
-      </Grid2>
+      </Grid>
     </Box>
   );
 };

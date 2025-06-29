@@ -14,7 +14,7 @@ import {
   Fade,
   Zoom,
 } from '@mui/material';
-import Grid2 from '@mui/material/Grid2';
+import { Grid } from '@mui/material';
 
 import {
   Assignment as TaskIcon,
@@ -134,7 +134,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         </FadeInContainer>
 
         {/* 統計カード */}
-        <Grid2 container spacing={3} sx={{ mb: 4 }}>
+        <Grid container spacing={3} sx={{ mb: 4 }}>
           {[
             {
               title: '総タスク数',
@@ -172,7 +172,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               ),
             },
           ].map((stat) => (
-            <Grid2 size={{ xs: 12, sm: 6, md: 3 }} key={stat.title}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }} key={stat.title}>
               <Zoom in timeout={stat.delay}>
                 <StyledCard>
                   <CardContent sx={{ p: 3 }}>
@@ -196,13 +196,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                   </CardContent>
                 </StyledCard>
               </Zoom>
-            </Grid2>
+            </Grid>
           ))}
-        </Grid2>
+        </Grid>
 
-        <Grid2 container spacing={3}>
+        <Grid container spacing={3}>
           {/* 個人スケジュール（ガントチャート） */}
-          <Grid2 size={12}>
+          <Grid size={12}>
             <Fade in timeout={600}>
               <StyledCard sx={{ mb: 3 }}>
                 <SectionHeader>
@@ -225,10 +225,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 </Box>
               </StyledCard>
             </Fade>
-          </Grid2>
+          </Grid>
 
         {/* 今日のタスク */}
-        <Grid2 size={{ xs: 12, md: 6 }}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Paper sx={{ p: 3, height: 400 }}>
             <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
               <TimeIcon sx={{ mr: 1 }} />
@@ -277,10 +277,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               )}
             </List>
           </Paper>
-        </Grid2>
+        </Grid>
 
         {/* 完了間近のタスク */}
-        <Grid2 size={{ xs: 12, md: 6 }}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Paper sx={{ p: 3, height: 400 }}>
             <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
               <FlagIcon sx={{ mr: 1 }} />
@@ -329,10 +329,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               )}
             </List>
           </Paper>
-        </Grid2>
+        </Grid>
 
         {/* 高優先度タスク */}
-        <Grid2 size={{ xs: 12, md: 6 }}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Paper sx={{ p: 3, height: 400 }}>
             <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
               <FlagIcon sx={{ mr: 1, color: 'error.main' }} />
@@ -381,10 +381,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               )}
             </List>
           </Paper>
-        </Grid2>
+        </Grid>
 
         {/* 今週のタスク一覧 */}
-        <Grid2 size={{ xs: 12, md: 6 }}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Paper sx={{ p: 3, height: 400 }}>
             <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
               <ScheduleIcon sx={{ mr: 1 }} />
@@ -429,8 +429,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               )}
             </List>
           </Paper>
-        </Grid2>
-        </Grid2>
+        </Grid>
+        </Grid>
       </ResponsiveContainer>
     </Box>
   );

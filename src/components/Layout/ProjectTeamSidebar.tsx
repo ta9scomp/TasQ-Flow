@@ -15,7 +15,6 @@ import {
 } from '@mui/material';
 import {
   ChevronLeft as ChevronLeftIcon,
-  Group as TeamIcon,
   Home as HomeIcon,
 } from '@mui/icons-material';
 import { sampleProjectTeams } from '../../data/sampleProjectTeams';

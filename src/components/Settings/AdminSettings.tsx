@@ -1,12 +1,10 @@
 import React from 'react';
 import {
   Box,
-  Paper,
   Typography,
   Switch,
   FormControlLabel,
   Divider,
-  Grid2,
   Card,
   CardContent,
   CardHeader,
@@ -14,7 +12,6 @@ import {
   List,
   ListItem,
   ListItemText,
-  ListItemSecondaryAction,
   IconButton,
   Dialog,
   DialogTitle,
@@ -38,6 +35,7 @@ import {
   AccordionDetails,
   LinearProgress,
 } from '@mui/material';
+import Grid from '@mui/material/Grid';
 
 import {
   AdminPanelSettings as AdminIcon,
@@ -46,10 +44,9 @@ import {
   People as PeopleIcon,
   Security as SecurityIcon,
   Analytics as AnalyticsIcon,
-  Bug as BugIcon,
+  BugReport as BugIcon,
   ExpandMore as ExpandMoreIcon,
   Download as DownloadIcon,
-  Upload as UploadIcon,
   Refresh as RefreshIcon,
 } from '@mui/icons-material';
 
@@ -108,10 +105,14 @@ export const AdminSettings: React.FC = () => {
   });
 
   const [newUserDialog, setNewUserDialog] = React.useState(false);
-  const [newUser, setNewUser] = React.useState({
+  const [newUser, setNewUser] = React.useState<{
+    name: string;
+    email: string;
+    role: User['role'];
+  }>({
     name: '',
     email: '',
-    role: 'member' as const,
+    role: 'member',
   });
 
   const handleUserRoleChange = (userId: string, newRole: User['role']) => {
@@ -120,11 +121,11 @@ export const AdminSettings: React.FC = () => {
     ));
   };
 
-  const handleUserStatusChange = (userId: string, newStatus: User['status']) => {
-    setUsers(prev => prev.map(user => 
-      user.id === userId ? { ...user, status: newStatus } : user
-    ));
-  };
+  // const handleUserStatusChange = (userId: string, newStatus: User['status']) => {
+  //   setUsers(prev => prev.map(user => 
+  //     user.id === userId ? { ...user, status: newStatus } : user
+  //   ));
+  // };
 
   const handleFeatureFlagToggle = (flagId: string, enabled: boolean) => {
     setFeatureFlags(prev => prev.map(flag => 
@@ -193,9 +194,9 @@ export const AdminSettings: React.FC = () => {
         この画面は管理者のみアクセス可能です。設定変更はシステム全体に影響します。
       </Alert>
 
-      <Grid2 container spacing={3}>
+      <Grid container spacing={3}>
         {/* システム設定 */}
-        <Grid2 size={{ xs: 12, md: 6 }}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card>
             <CardHeader
               avatar={<SecurityIcon />}
@@ -268,10 +269,10 @@ export const AdminSettings: React.FC = () => {
               />
             </CardContent>
           </Card>
-        </Grid2>
+        </Grid>
 
         {/* システム監視 */}
-        <Grid2 size={{ xs: 12, md: 6 }}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card>
             <CardHeader
               avatar={<AnalyticsIcon />}
@@ -314,10 +315,10 @@ export const AdminSettings: React.FC = () => {
               </Button>
             </CardContent>
           </Card>
-        </Grid2>
+        </Grid>
 
         {/* ユーザー管理 */}
-        <Grid2 size={12}>
+        <Grid size={{ xs: 12 }}>
           <Card>
             <CardHeader
               avatar={<PeopleIcon />}
@@ -382,10 +383,10 @@ export const AdminSettings: React.FC = () => {
               </TableContainer>
             </CardContent>
           </Card>
-        </Grid2>
+        </Grid>
 
         {/* 機能フラグ管理 */}
-        <Grid2 size={12}>
+        <Grid size={{ xs: 12 }}>
           <Card>
             <CardHeader
               title="機能フラグ管理"
@@ -450,10 +451,10 @@ export const AdminSettings: React.FC = () => {
               ))}
             </CardContent>
           </Card>
-        </Grid2>
+        </Grid>
 
         {/* システムログ */}
-        <Grid2 size={12}>
+        <Grid size={{ xs: 12 }}>
           <Card>
             <CardHeader
               avatar={<BugIcon />}
@@ -502,8 +503,8 @@ export const AdminSettings: React.FC = () => {
               </List>
             </CardContent>
           </Card>
-        </Grid2>
-      </Grid2>
+        </Grid>
+      </Grid>
 
       {/* 新規ユーザー追加ダイアログ */}
       <Dialog open={newUserDialog} onClose={() => setNewUserDialog(false)} maxWidth="sm" fullWidth>

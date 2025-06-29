@@ -9,12 +9,12 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-  Grid2,
   Card,
   CardContent,
   Chip,
+  Grid,
 } from '@mui/material';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, addDays, isSameDay } from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import type { Member, Task } from '../../types/task';
 
@@ -43,8 +43,6 @@ export const MemberHeatmap: React.FC<MemberHeatmapProps> = ({
   dateRange = 'month',
   baseDate = new Date(),
 }) => {
-  const [selectedPeriod, setSelectedPeriod] = React.useState<'current' | 'next' | 'prev'>('current');
-  const [viewMode, setViewMode] = React.useState<'grid' | 'list'>('grid');
 
   // 日付範囲の計算
   const getPeriodDates = () => {
@@ -160,7 +158,7 @@ export const MemberHeatmap: React.FC<MemberHeatmapProps> = ({
 
     // 月表示の詳細カレンダー
     const firstDayOfWeek = getDay(start);
-    const calendarDays = [];
+    const calendarDays: (DayData | null)[] = [];
     
     // 前月の空白を追加
     for (let i = 0; i < firstDayOfWeek; i++) {
@@ -172,7 +170,7 @@ export const MemberHeatmap: React.FC<MemberHeatmapProps> = ({
       calendarDays.push(dayData);
     });
 
-    const weeks = [];
+    const weeks: (DayData | null)[][] = [];
     for (let i = 0; i < calendarDays.length; i += 7) {
       weeks.push(calendarDays.slice(i, i + 7));
     }
@@ -180,21 +178,21 @@ export const MemberHeatmap: React.FC<MemberHeatmapProps> = ({
     return (
       <Box>
         {/* 曜日ヘッダー */}
-        <Grid2 container sx={{ mb: 1 }}>
+        <Grid container sx={{ mb: 1 }}>
           {['日', '月', '火', '水', '木', '金', '土'].map(day => (
-            <Grid2 size='grow' key={day} sx={{ textAlign: 'center' }}>
+            <Grid size='grow' key={day} sx={{ textAlign: 'center' }}>
               <Typography variant="caption" fontWeight="bold">
                 {day}
               </Typography>
-            </Grid2>
+            </Grid>
           ))}
-        </Grid2>
+        </Grid>
 
         {/* カレンダーグリッド */}
         {weeks.map((week, weekIndex) => (
-          <Grid2 container key={weekIndex} sx={{ mb: 0.5 }}>
+          <Grid container key={weekIndex} sx={{ mb: 0.5 }}>
             {week.map((dayData, dayIndex) => (
-              <Grid2 size='grow' key={dayIndex} sx={{ textAlign: 'center' }}>
+              <Grid size='grow' key={dayIndex} sx={{ textAlign: 'center' }}>
                 {dayData ? (
                   <Tooltip
                     title={
@@ -252,9 +250,9 @@ export const MemberHeatmap: React.FC<MemberHeatmapProps> = ({
                 ) : (
                   <Box sx={{ width: 36, height: 36 }} />
                 )}
-              </Grid2>
+              </Grid>
             ))}
-          </Grid2>
+          </Grid>
         ))}
       </Box>
     );
@@ -304,9 +302,9 @@ export const MemberHeatmap: React.FC<MemberHeatmapProps> = ({
       </Box>
 
       {selectedMemberData && (
-        <Grid2 container spacing={3}>
+        <Grid container spacing={3}>
           {/* メンバー情報 */}
-          <Grid2 size={{ xs: 12, md: 4 }}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Card>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
@@ -350,20 +348,20 @@ export const MemberHeatmap: React.FC<MemberHeatmapProps> = ({
                 </Box>
               </CardContent>
             </Card>
-          </Grid2>
+          </Grid>
 
           {/* ヒートマップ */}
-          <Grid2 size={{ xs: 12, md: 8 }}>
+          <Grid size={{ xs: 12, md: 8 }}>
             <Paper sx={{ p: 2 }}>
               <Typography variant="h6" gutterBottom>
                 {format(start, 'yyyy年MM月', { locale: ja })} 稼働状況
               </Typography>
               {renderCalendarGrid()}
             </Paper>
-          </Grid2>
+          </Grid>
 
           {/* 凡例 */}
-          <Grid2 size={12}>
+          <Grid size={{ xs: 12 }}>
             <Paper sx={{ p: 2 }}>
               <Typography variant="h6" gutterBottom>凡例</Typography>
               <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -398,8 +396,8 @@ export const MemberHeatmap: React.FC<MemberHeatmapProps> = ({
                 </Box>
               </Box>
             </Paper>
-          </Grid2>
-        </Grid2>
+          </Grid>
+        </Grid>
       )}
     </Box>
   );

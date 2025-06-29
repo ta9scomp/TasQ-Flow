@@ -1,87 +1,72 @@
 # コンポーネント設計 学習ガイド
 
-**対象**: React基礎を学んだ初学者  
-**難易度**: ⭐⭐⭐⭐☆（中級〜上級）  
-**学習時間**: 約4-5時間
+## 📚 はじめに
 
----
+このガイドでは、再利用可能で保守しやすいReactコンポーネントの設計原則について学びます。TasQ Flowプロジェクトで使われているような、プロダクションレベルのコンポーネント設計手法を身につけましょう。
 
-## 📚 このガイドで学べること
+## 🎯 学習目標
 
-- 良いコンポーネント設計の原則
-- 再利用可能なコンポーネントの作り方
-- Propsの設計方法
-- コンポーネントの分割戦略
-- TasQ Flowで使われている設計パターン
+- コンポーネント設計の基本原則を理解する
+- 再利用可能なコンポーネントの作り方を学ぶ
+- プロップスの設計パターンを習得する
+- コンポーネントの分割方法を理解する
+- TasQ Flowのコンポーネント設計を分析できるようになる
 
----
+## 📖 1. コンポーネント設計の原則
 
-## 🤔 コンポーネント設計って何？
+### SOLID原則をReactに適用
 
-### 分かりやすい例え話：料理のレシピ作り
+#### 1. Single Responsibility Principle（単一責任原則）
 
-**悪いレシピ**（悪いコンポーネント設計）：
-```
-「何かおいしいものを作る」
-- 適当に材料を混ぜる
-- 火加減はその時の気分で
-- 完成品は毎回違う味
-```
-
-**良いレシピ**（良いコンポーネント設計）：
-```
-「唐揚げを作る」
-- 材料: 鶏肉300g、醤油大さじ2、にんにく1片...
-- 手順: 1. 肉を切る 2. 下味をつける 3. 揚げる...
-- 誰が作っても同じ味になる
-```
-
-コンポーネント設計も同じで、**「何をするか」「何が必要か」「どう使うか」**を明確にすることが重要です。
-
----
-
-## 🎯 良いコンポーネント設計の原則
-
-### 1. 単一責任の原則（SRP）
-
-```tsx
-// ❌ 悪い例：一つのコンポーネントが複数の責任を持つ
+```typescript
+// ❌ 悪い例：一つのコンポーネントが多くの責任を持っている
 function UserDashboard({ userId }) {
   const [user, setUser] = useState(null);
-  const [posts, setPosts] = useState([]);
+  const [tasks, setTasks] = useState([]);
   const [notifications, setNotifications] = useState([]);
   
-  // ユーザー情報の取得
+  // ユーザー情報を取得
   useEffect(() => {
     fetchUser(userId).then(setUser);
   }, [userId]);
   
-  // 投稿の取得
+  // タスクを取得
   useEffect(() => {
-    fetchPosts(userId).then(setPosts);
+    fetchTasks(userId).then(setTasks);
   }, [userId]);
   
-  // 通知の取得
+  // 通知を取得
   useEffect(() => {
     fetchNotifications(userId).then(setNotifications);
   }, [userId]);
   
   return (
     <div>
-      {/* ユーザー情報の表示 */}
-      <div>{user?.name}</div>
-      
-      {/* 投稿一覧の表示 */}
+      {/* ユーザー情報表示 */}
       <div>
-        {posts.map(post => (
-          <div key={post.id}>{post.title}</div>
+        <img src={user?.avatar} />
+        <h1>{user?.name}</h1>
+        <p>{user?.email}</p>
+      </div>
+      
+      {/* タスクリスト */}
+      <div>
+        <h2>タスク</h2>
+        {tasks.map(task => (
+          <div key={task.id}>
+            <h3>{task.title}</h3>
+            <p>{task.description}</p>
+          </div>
         ))}
       </div>
       
-      {/* 通知一覧の表示 */}
+      {/* 通知 */}
       <div>
+        <h2>通知</h2>
         {notifications.map(notification => (
-          <div key={notification.id}>{notification.message}</div>
+          <div key={notification.id}>
+            {notification.message}
+          </div>
         ))}
       </div>
     </div>
@@ -89,14 +74,14 @@ function UserDashboard({ userId }) {
 }
 ```
 
-```tsx
+```typescript
 // ✅ 良い例：責任を分割
 function UserDashboard({ userId }) {
   return (
     <div>
       <UserProfile userId={userId} />
-      <UserPosts userId={userId} />
-      <UserNotifications userId={userId} />
+      <TaskList userId={userId} />
+      <NotificationList userId={userId} />
     </div>
   );
 }
@@ -108,753 +93,335 @@ function UserProfile({ userId }) {
     fetchUser(userId).then(setUser);
   }, [userId]);
   
-  return <div>{user?.name}</div>;
+  if (!user) return <div>Loading...</div>;
+  
+  return (
+    <div>
+      <img src={user.avatar} alt={user.name} />
+      <h1>{user.name}</h1>
+      <p>{user.email}</p>
+    </div>
+  );
 }
 
-function UserPosts({ userId }) {
-  const [posts, setPosts] = useState([]);
+function TaskList({ userId }) {
+  const [tasks, setTasks] = useState([]);
   
   useEffect(() => {
-    fetchPosts(userId).then(setPosts);
+    fetchTasks(userId).then(setTasks);
   }, [userId]);
   
   return (
     <div>
-      {posts.map(post => (
-        <PostCard key={post.id} post={post} />
+      <h2>タスク</h2>
+      {tasks.map(task => (
+        <TaskItem key={task.id} task={task} />
       ))}
     </div>
   );
 }
 ```
 
-### 2. プロパティ（Props）の設計
+#### 2. Open/Closed Principle（開放閉鎖原則）
 
-```tsx
-// ❌ 悪い例：プロパティが曖昧
-function Button({ data, config, handlers }) {
-  return (
-    <button 
-      onClick={handlers.click}
-      style={config.style}
-    >
-      {data.text}
-    </button>
-  );
-}
-
-// ✅ 良い例：プロパティが明確
+```typescript
+// 拡張可能な Button コンポーネント
 interface ButtonProps {
   children: React.ReactNode;
   variant?: 'primary' | 'secondary' | 'danger';
   size?: 'small' | 'medium' | 'large';
-  disabled?: boolean;
   onClick?: () => void;
+  disabled?: boolean;
+  startIcon?: React.ReactNode;
+  endIcon?: React.ReactNode;
+  // 新しいプロパティを追加しても既存のコードに影響しない
+  fullWidth?: boolean;
   loading?: boolean;
 }
 
-function Button({ 
-  children, 
-  variant = 'primary', 
-  size = 'medium', 
-  disabled = false,
-  onClick,
-  loading = false
-}: ButtonProps) {
+const Button: React.FC<ButtonProps> = ({
+  children,
+  variant = 'primary',
+  size = 'medium',
+  startIcon,
+  endIcon,
+  fullWidth = false,
+  loading = false,
+  ...props
+}) => {
   return (
-    <button 
-      onClick={onClick}
-      disabled={disabled || loading}
-      className={`btn btn-${variant} btn-${size}`}
+    <button
+      className={`btn btn-${variant} btn-${size} ${fullWidth ? 'btn-full' : ''}`}
+      disabled={loading || props.disabled}
+      {...props}
     >
-      {loading ? 'Loading...' : children}
+      {loading && <Spinner size="small" />}
+      {!loading && startIcon && <span className="btn-icon-start">{startIcon}</span>}
+      {children}
+      {!loading && endIcon && <span className="btn-icon-end">{endIcon}</span>}
     </button>
   );
-}
+};
 
 // 使用例
-<Button variant="primary" size="large" onClick={handleSave}>
+<Button variant="primary" startIcon={<SaveIcon />}>
   保存
+</Button>
+
+<Button variant="danger" loading={isSaving}>
+  削除
 </Button>
 ```
 
-### 3. コンポーネントの合成（Composition）
+## 📖 2. コンポーネントの分類
 
-```tsx
-// ✅ 合成可能なカードコンポーネント
-function Card({ children, className = "" }) {
-  return (
-    <div className={`card ${className}`}>
-      {children}
-    </div>
-  );
+### 1. Presentational Components（表示コンポーネント）
+
+```typescript
+// 表示のみを担当し、状態を持たない
+interface TaskCardProps {
+  task: {
+    id: string;
+    title: string;
+    description: string;
+    status: 'todo' | 'progress' | 'done';
+    priority: 'low' | 'medium' | 'high';
+  };
+  onEdit: (task: Task) => void;
+  onDelete: (taskId: string) => void;
+  onStatusChange: (taskId: string, status: string) => void;
 }
 
-function CardHeader({ children }) {
-  return <div className="card-header">{children}</div>;
-}
-
-function CardBody({ children }) {
-  return <div className="card-body">{children}</div>;
-}
-
-function CardFooter({ children }) {
-  return <div className="card-footer">{children}</div>;
-}
-
-// 名前空間として組み合わせ
-Card.Header = CardHeader;
-Card.Body = CardBody;
-Card.Footer = CardFooter;
-
-// 使用例
-function TaskCard({ task }) {
+const TaskCard: React.FC<TaskCardProps> = ({ 
+  task, 
+  onEdit, 
+  onDelete, 
+  onStatusChange 
+}) => {
   return (
     <Card>
-      <Card.Header>
-        <h3>{task.title}</h3>
-      </Card.Header>
-      <Card.Body>
-        <p>{task.description}</p>
-      </Card.Body>
-      <Card.Footer>
-        <Button onClick={() => editTask(task.id)}>編集</Button>
-      </Card.Footer>
+      <CardHeader>
+        <Typography variant="h6">{task.title}</Typography>
+        <Chip 
+          label={task.priority} 
+          color={task.priority === 'high' ? 'error' : 'default'}
+        />
+      </CardHeader>
+      
+      <CardContent>
+        <Typography variant="body2">
+          {task.description}
+        </Typography>
+        
+        <Select
+          value={task.status}
+          onChange={(e) => onStatusChange(task.id, e.target.value)}
+        >
+          <MenuItem value="todo">To Do</MenuItem>
+          <MenuItem value="progress">In Progress</MenuItem>
+          <MenuItem value="done">Done</MenuItem>
+        </Select>
+      </CardContent>
+      
+      <CardActions>
+        <Button onClick={() => onEdit(task)}>編集</Button>
+        <Button onClick={() => onDelete(task.id)} color="error">
+          削除
+        </Button>
+      </CardActions>
     </Card>
   );
-}
+};
 ```
 
----
+### 2. Container Components（コンテナコンポーネント）
 
-## 🧩 再利用可能なコンポーネントの作り方
-
-### 1. Input コンポーネント
-
-```tsx
-interface InputProps {
-  label?: string;
-  type?: 'text' | 'email' | 'password' | 'number';
-  value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-  required?: boolean;
-  disabled?: boolean;
-  error?: string;
-  helpText?: string;
-}
-
-function Input({
-  label,
-  type = 'text',
-  value,
-  onChange,
-  placeholder,
-  required = false,
-  disabled = false,
-  error,
-  helpText
-}: InputProps) {
-  const inputId = `input-${Math.random().toString(36).substr(2, 9)}`;
+```typescript
+// ビジネスロジックと状態管理を担当
+const TaskListContainer: React.FC = () => {
+  const {
+    tasks,
+    isLoading,
+    error,
+    updateTask,
+    deleteTask,
+    fetchTasks
+  } = useTaskStore();
+  
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  
+  useEffect(() => {
+    fetchTasks();
+  }, [fetchTasks]);
+  
+  const handleEdit = (task: Task) => {
+    setEditingTask(task);
+    setDialogOpen(true);
+  };
+  
+  const handleDelete = async (taskId: string) => {
+    if (confirm('本当に削除しますか？')) {
+      await deleteTask(taskId);
+    }
+  };
+  
+  const handleStatusChange = (taskId: string, status: string) => {
+    updateTask(taskId, { status });
+  };
+  
+  if (isLoading) return <LoadingSpinner />;
+  if (error) return <ErrorMessage message={error} />;
   
   return (
-    <div className="input-group">
-      {label && (
-        <label htmlFor={inputId} className="input-label">
-          {label}
-          {required && <span className="required">*</span>}
-        </label>
-      )}
-      
-      <input
-        id={inputId}
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        required={required}
-        disabled={disabled}
-        className={`input ${error ? 'input-error' : ''}`}
+    <>
+      <TaskList 
+        tasks={tasks}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        onStatusChange={handleStatusChange}
       />
       
-      {error && <span className="error-message">{error}</span>}
-      {helpText && !error && <span className="help-text">{helpText}</span>}
-    </div>
+      <TaskEditDialog
+        open={dialogOpen}
+        task={editingTask}
+        onClose={() => setDialogOpen(false)}
+        onSave={(updatedTask) => {
+          updateTask(updatedTask.id, updatedTask);
+          setDialogOpen(false);
+        }}
+      />
+    </>
   );
-}
-
-// 使用例
-function UserForm() {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    age: ''
-  });
-  const [errors, setErrors] = useState({});
-
-  return (
-    <form>
-      <Input
-        label="お名前"
-        value={formData.name}
-        onChange={(value) => setFormData({...formData, name: value})}
-        required
-        error={errors.name}
-      />
-      
-      <Input
-        label="メールアドレス"
-        type="email"
-        value={formData.email}
-        onChange={(value) => setFormData({...formData, email: value})}
-        required
-        error={errors.email}
-        helpText="有効なメールアドレスを入力してください"
-      />
-      
-      <Input
-        label="年齢"
-        type="number"
-        value={formData.age}
-        onChange={(value) => setFormData({...formData, age: value})}
-      />
-    </form>
-  );
-}
+};
 ```
 
-### 2. Modal コンポーネント
-
-```tsx
-interface ModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  title?: string;
-  children: React.ReactNode;
-  size?: 'small' | 'medium' | 'large';
-  closeOnBackdropClick?: boolean;
-}
-
-function Modal({
-  isOpen,
-  onClose,
-  title,
-  children,
-  size = 'medium',
-  closeOnBackdropClick = true
-}: ModalProps) {
-  // ESCキーでモーダルを閉じる
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
-        onClose();
-      }
-    };
-    
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
-  }, [isOpen, onClose]);
-
-  if (!isOpen) return null;
-
-  return (
-    <div 
-      className="modal-backdrop"
-      onClick={closeOnBackdropClick ? onClose : undefined}
-    >
-      <div 
-        className={`modal modal-${size}`}
-        onClick={(e) => e.stopPropagation()} // バブリング防止
-      >
-        <div className="modal-header">
-          {title && <h2>{title}</h2>}
-          <button className="modal-close" onClick={onClose}>
-            ×
-          </button>
-        </div>
-        
-        <div className="modal-body">
-          {children}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// 使用例
-function App() {
-  const [modalOpen, setModalOpen] = useState(false);
-
-  return (
-    <div>
-      <Button onClick={() => setModalOpen(true)}>
-        モーダルを開く
-      </Button>
-      
-      <Modal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        title="確認"
-        size="small"
-      >
-        <p>本当に削除しますか？</p>
-        <div className="modal-actions">
-          <Button variant="danger" onClick={handleDelete}>
-            削除
-          </Button>
-          <Button variant="secondary" onClick={() => setModalOpen(false)}>
-            キャンセル
-          </Button>
-        </div>
-      </Modal>
-    </div>
-  );
-}
-```
-
----
-
-## 🎮 実践：タスクカードコンポーネントを設計しよう
-
-### Step 1: 要件の整理
+### 3. Compound Components（複合コンポーネント）
 
 ```typescript
-// まず、タスクカードに必要な機能を整理
-interface TaskCardRequirements {
-  // 表示する情報
-  - タスクのタイトル
-  - 説明文
-  - 優先度
-  - 進捗状況
-  - 担当者
-  - 期限
-  - ステータス
-
-  // 操作
-  - 編集ボタン
-  - 削除ボタン
-  - ステータス変更
-  - 詳細表示
-
-  // 見た目のバリエーション
-  - サイズ（小・中・大）
-  - レイアウト（横・縦）
-  - テーマ（通常・ダーク）
-}
-```
-
-### Step 2: 型定義
-
-```typescript
-interface Task {
-  id: string;
-  title: string;
-  description?: string;
-  priority: 'low' | 'medium' | 'high' | 'urgent';
-  progress: number; // 0-100
-  assignee?: string;
-  dueDate?: Date;
-  status: 'todo' | 'in-progress' | 'done' | 'blocked';
-  tags?: string[];
+// 複数の部品が連携して動作するコンポーネント
+interface TabsContextValue {
+  activeTab: string;
+  setActiveTab: (tab: string) => void;
 }
 
-interface TaskCardProps {
-  task: Task;
-  size?: 'compact' | 'normal' | 'detailed';
-  layout?: 'horizontal' | 'vertical';
-  showActions?: boolean;
-  onEdit?: (task: Task) => void;
-  onDelete?: (taskId: string) => void;
-  onStatusChange?: (taskId: string, status: Task['status']) => void;
-  onClick?: (task: Task) => void;
-}
-```
+const TabsContext = createContext<TabsContextValue | null>(null);
 
-### Step 3: コンポーネント実装
-
-```tsx
-function TaskCard({
-  task,
-  size = 'normal',
-  layout = 'vertical',
-  showActions = true,
-  onEdit,
-  onDelete,
-  onStatusChange,
-  onClick
-}: TaskCardProps) {
-  const getPriorityColor = (priority: Task['priority']) => {
-    switch (priority) {
-      case 'low': return '#10b981';
-      case 'medium': return '#f59e0b';
-      case 'high': return '#ef4444';
-      case 'urgent': return '#dc2626';
-      default: return '#6b7280';
-    }
-  };
-
-  const getStatusIcon = (status: Task['status']) => {
-    switch (status) {
-      case 'todo': return '📋';
-      case 'in-progress': return '⚡';
-      case 'done': return '✅';
-      case 'blocked': return '🚫';
-      default: return '📋';
-    }
-  };
-
-  const formatDueDate = (date: Date) => {
-    const now = new Date();
-    const diffDays = Math.ceil((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-    
-    if (diffDays < 0) return '期限切れ';
-    if (diffDays === 0) return '今日';
-    if (diffDays === 1) return '明日';
-    return `${diffDays}日後`;
-  };
-
+const Tabs: React.FC<{ children: React.ReactNode; defaultTab?: string }> = ({ 
+  children, 
+  defaultTab 
+}) => {
+  const [activeTab, setActiveTab] = useState(defaultTab || '');
+  
   return (
-    <div 
-      className={`task-card task-card-${size} task-card-${layout}`}
-      onClick={() => onClick?.(task)}
-    >
-      {/* ヘッダー */}
-      <div className="task-card-header">
-        <div className="task-priority" 
-             style={{ backgroundColor: getPriorityColor(task.priority) }}>
-          {task.priority}
-        </div>
-        <div className="task-status">
-          {getStatusIcon(task.status)}
-        </div>
-      </div>
-
-      {/* メインコンテンツ */}
-      <div className="task-card-content">
-        <h3 className="task-title">{task.title}</h3>
-        
-        {size !== 'compact' && task.description && (
-          <p className="task-description">{task.description}</p>
-        )}
-        
-        {size === 'detailed' && (
-          <div className="task-details">
-            {task.assignee && (
-              <div className="task-assignee">
-                👤 {task.assignee}
-              </div>
-            )}
-            
-            {task.dueDate && (
-              <div className="task-due-date">
-                📅 {formatDueDate(task.dueDate)}
-              </div>
-            )}
-            
-            <div className="task-progress">
-              <div className="progress-bar">
-                <div 
-                  className="progress-fill"
-                  style={{ width: `${task.progress}%` }}
-                />
-              </div>
-              <span>{task.progress}%</span>
-            </div>
-            
-            {task.tags && task.tags.length > 0 && (
-              <div className="task-tags">
-                {task.tags.map(tag => (
-                  <span key={tag} className="tag">#{tag}</span>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* アクションボタン */}
-      {showActions && (
-        <div className="task-card-actions">
-          {onStatusChange && (
-            <select
-              value={task.status}
-              onChange={(e) => onStatusChange(task.id, e.target.value as Task['status'])}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <option value="todo">ToDo</option>
-              <option value="in-progress">進行中</option>
-              <option value="done">完了</option>
-              <option value="blocked">ブロック</option>
-            </select>
-          )}
-          
-          {onEdit && (
-            <Button 
-              size="small" 
-              onClick={(e) => {
-                e.stopPropagation();
-                onEdit(task);
-              }}
-            >
-              編集
-            </Button>
-          )}
-          
-          {onDelete && (
-            <Button 
-              size="small" 
-              variant="danger"
-              onClick={(e) => {
-                e.stopPropagation();
-                if (confirm('本当に削除しますか？')) {
-                  onDelete(task.id);
-                }
-              }}
-            >
-              削除
-            </Button>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-```
-
-### Step 4: 使用例
-
-```tsx
-function TaskBoard() {
-  const [tasks, setTasks] = useState<Task[]>([
-    {
-      id: '1',
-      title: 'UIデザインの修正',
-      description: 'ヘッダーのレイアウトを調整する',
-      priority: 'high',
-      progress: 60,
-      assignee: '田中',
-      dueDate: new Date('2025-06-30'),
-      status: 'in-progress',
-      tags: ['UI', 'デザイン']
-    },
-    // ... 他のタスク
-  ]);
-
-  const handleEditTask = (task: Task) => {
-    // 編集モーダルを開く
-    console.log('編集:', task);
-  };
-
-  const handleDeleteTask = (taskId: string) => {
-    setTasks(tasks.filter(t => t.id !== taskId));
-  };
-
-  const handleStatusChange = (taskId: string, status: Task['status']) => {
-    setTasks(tasks.map(t => 
-      t.id === taskId ? { ...t, status } : t
-    ));
-  };
-
-  return (
-    <div className="task-board">
-      {/* コンパクト表示 */}
-      <div className="task-column">
-        <h2>コンパクト表示</h2>
-        {tasks.map(task => (
-          <TaskCard
-            key={task.id}
-            task={task}
-            size="compact"
-            onEdit={handleEditTask}
-            onDelete={handleDeleteTask}
-            onStatusChange={handleStatusChange}
-          />
-        ))}
-      </div>
-
-      {/* 詳細表示 */}
-      <div className="task-column">
-        <h2>詳細表示</h2>
-        {tasks.map(task => (
-          <TaskCard
-            key={task.id}
-            task={task}
-            size="detailed"
-            onEdit={handleEditTask}
-            onDelete={handleDeleteTask}
-            onStatusChange={handleStatusChange}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-```
-
----
-
-## 🏗️ TasQ Flowでの設計パターン
-
-### 1. レイアウトコンポーネント
-
-```tsx
-// 基本レイアウト
-function AppLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="app-layout">
-      <Header />
-      <div className="app-content">
-        <Sidebar />
-        <main className="main-content">
-          {children}
-        </main>
-      </div>
-    </div>
-  );
-}
-
-// ページレイアウト
-function PageLayout({ 
-  title, 
-  actions, 
-  children 
-}: { 
-  title: string;
-  actions?: React.ReactNode;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="page-layout">
-      <div className="page-header">
-        <h1>{title}</h1>
-        {actions && <div className="page-actions">{actions}</div>}
-      </div>
-      <div className="page-content">
+    <TabsContext.Provider value={{ activeTab, setActiveTab }}>
+      <div className="tabs">
         {children}
       </div>
-    </div>
+    </TabsContext.Provider>
   );
-}
-```
+};
 
-### 2. 条件付きレンダリングコンポーネント
+const TabList: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  return <div className="tab-list">{children}</div>;
+};
 
-```tsx
-interface ConditionalProps {
-  when: boolean;
-  children: React.ReactNode;
-  fallback?: React.ReactNode;
-}
+const Tab: React.FC<{ value: string; children: React.ReactNode }> = ({ 
+  value, 
+  children 
+}) => {
+  const context = useContext(TabsContext);
+  if (!context) throw new Error('Tab must be used within Tabs');
+  
+  const { activeTab, setActiveTab } = context;
+  
+  return (
+    <button
+      className={`tab ${activeTab === value ? 'active' : ''}`}
+      onClick={() => setActiveTab(value)}
+    >
+      {children}
+    </button>
+  );
+};
 
-function When({ when, children, fallback = null }: ConditionalProps) {
-  return when ? <>{children}</> : <>{fallback}</>;
-}
+const TabPanels: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  return <div className="tab-panels">{children}</div>;
+};
+
+const TabPanel: React.FC<{ value: string; children: React.ReactNode }> = ({ 
+  value, 
+  children 
+}) => {
+  const context = useContext(TabsContext);
+  if (!context) throw new Error('TabPanel must be used within Tabs');
+  
+  const { activeTab } = context;
+  
+  if (activeTab !== value) return null;
+  
+  return <div className="tab-panel">{children}</div>;
+};
 
 // 使用例
-function TaskList({ tasks, loading, error }) {
-  return (
-    <div>
-      <When when={loading} fallback={
-        <When when={error} fallback={
-          <When when={tasks.length === 0} fallback={
-            <div>
-              {tasks.map(task => (
-                <TaskCard key={task.id} task={task} />
-              ))}
-            </div>
-          }>
-            <div>タスクがありません</div>
-          </When>
-        }>
-          <div>エラーが発生しました: {error}</div>
-        </When>
-      }>
-        <div>読み込み中...</div>
-      </When>
-    </div>
-  );
-}
+<Tabs defaultTab="tasks">
+  <TabList>
+    <Tab value="tasks">タスク</Tab>
+    <Tab value="calendar">カレンダー</Tab>
+    <Tab value="reports">レポート</Tab>
+  </TabList>
+  
+  <TabPanels>
+    <TabPanel value="tasks">
+      <TaskList />
+    </TabPanel>
+    <TabPanel value="calendar">
+      <Calendar />
+    </TabPanel>
+    <TabPanel value="reports">
+      <Reports />
+    </TabPanel>
+  </TabPanels>
+</Tabs>
 ```
 
----
+## 📖 3. プロップス設計のベストプラクティス
 
-## 🎁 実践的なTips
+### 1. デフォルト値の適切な設定
 
-### 1. カスタムフックでロジックを分離
-
-```tsx
-// ❌ コンポーネントにロジックが混在
-function TaskList() {
-  const [tasks, setTasks] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    setLoading(true);
-    fetchTasks()
-      .then(setTasks)
-      .catch(setError)
-      .finally(() => setLoading(false));
-  }, []);
-
-  const addTask = (task) => {
-    setTasks([...tasks, task]);
-  };
-
-  // ... 他のロジック
+```typescript
+interface ButtonProps {
+  children: React.ReactNode;
+  variant?: 'primary' | 'secondary' | 'outline';
+  size?: 'sm' | 'md' | 'lg';
+  disabled?: boolean;
+  loading?: boolean;
+  onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
-// ✅ カスタムフックでロジックを分離
-function useTasks() {
-  const [tasks, setTasks] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    setLoading(true);
-    fetchTasks()
-      .then(setTasks)
-      .catch(setError)
-      .finally(() => setLoading(false));
-  }, []);
-
-  const addTask = useCallback((task) => {
-    setTasks(prev => [...prev, task]);
-  }, []);
-
-  const updateTask = useCallback((id, updates) => {
-    setTasks(prev => prev.map(t => t.id === id ? {...t, ...updates} : t));
-  }, []);
-
-  return { tasks, loading, error, addTask, updateTask };
-}
-
-// コンポーネントはシンプルに
-function TaskList() {
-  const { tasks, loading, error, addTask, updateTask } = useTasks();
-
-  if (loading) return <Loading />;
-  if (error) return <Error message={error} />;
-
-  return (
-    <div>
-      {tasks.map(task => (
-        <TaskCard key={task.id} task={task} onUpdate={updateTask} />
-      ))}
-    </div>
-  );
-}
+const Button: React.FC<ButtonProps> = ({
+  children,
+  variant = 'primary',  // デフォルト値を設定
+  size = 'md',
+  disabled = false,
+  loading = false,
+  onClick,
+  ...rest
+}) => {
+  // コンポーネントの実装
+};
 ```
 
 ### 2. Render Props パターン
 
-```tsx
+```typescript
 interface DataFetcherProps<T> {
   url: string;
   children: (data: {
     data: T | null;
     loading: boolean;
     error: string | null;
+    refetch: () => void;
   }) => React.ReactNode;
 }
 
@@ -862,78 +429,477 @@ function DataFetcher<T>({ url, children }: DataFetcherProps<T>) {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetch(url)
-      .then(res => res.json())
-      .then(setData)
-      .catch(err => setError(err.message))
-      .finally(() => setLoading(false));
+  
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await fetch(url);
+      const result = await response.json();
+      setData(result);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   }, [url]);
-
-  return <>{children({ data, loading, error })}</>;
+  
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+  
+  return children({ data, loading, error, refetch: fetchData });
 }
 
 // 使用例
-function UserProfile({ userId }) {
+<DataFetcher<User[]> url="/api/users">
+  {({ data, loading, error, refetch }) => {
+    if (loading) return <div>Loading...</div>;
+    if (error) return <div>Error: {error}</div>;
+    
+    return (
+      <div>
+        <button onClick={refetch}>更新</button>
+        {data?.map(user => (
+          <UserCard key={user.id} user={user} />
+        ))}
+      </div>
+    );
+  }}
+</DataFetcher>
+```
+
+### 3. Polymorphic Components（多態コンポーネント）
+
+```typescript
+type AsProp<C extends React.ElementType> = {
+  as?: C;
+};
+
+type PropsToOmit<C extends React.ElementType, P> = keyof (AsProp<C> & P);
+
+type PolymorphicComponentProp<
+  C extends React.ElementType,
+  Props = {}
+> = React.PropsWithChildren<Props & AsProp<C>> &
+  Omit<React.ComponentPropsWithoutRef<C>, PropsToOmit<C, Props>>;
+
+interface TextProps {
+  color?: 'primary' | 'secondary' | 'error';
+  size?: 'sm' | 'md' | 'lg';
+}
+
+type TextComponent = <C extends React.ElementType = 'span'>(
+  props: PolymorphicComponentProp<C, TextProps>
+) => React.ReactElement | null;
+
+const Text: TextComponent = ({ 
+  as, 
+  color = 'primary', 
+  size = 'md', 
+  children, 
+  ...rest 
+}) => {
+  const Component = as || 'span';
+  
   return (
-    <DataFetcher<User> url={`/api/users/${userId}`}>
-      {({ data: user, loading, error }) => {
-        if (loading) return <Spinner />;
-        if (error) return <Error message={error} />;
-        return <div>{user?.name}</div>;
-      }}
-    </DataFetcher>
+    <Component 
+      className={`text text-${color} text-${size}`}
+      {...rest}
+    >
+      {children}
+    </Component>
+  );
+};
+
+// 使用例
+<Text>デフォルトはspan</Text>
+<Text as="h1" size="lg">h1として表示</Text>
+<Text as="p" color="secondary">pタグとして表示</Text>
+<Text as="button" onClick={() => alert('clicked')}>
+  ボタンとして表示
+</Text>
+```
+
+## 📖 4. カスタムフックによるロジック分離
+
+### 1. 状態管理ロジックの分離
+
+```typescript
+// カスタムフック
+function useTaskManagement() {
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  
+  const addTask = useCallback(async (taskData: Omit<Task, 'id'>) => {
+    setLoading(true);
+    try {
+      const newTask = await api.createTask(taskData);
+      setTasks(prev => [...prev, newTask]);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+  
+  const updateTask = useCallback(async (taskId: string, updates: Partial<Task>) => {
+    setLoading(true);
+    try {
+      const updatedTask = await api.updateTask(taskId, updates);
+      setTasks(prev => prev.map(task => 
+        task.id === taskId ? updatedTask : task
+      ));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+  
+  const deleteTask = useCallback(async (taskId: string) => {
+    setLoading(true);
+    try {
+      await api.deleteTask(taskId);
+      setTasks(prev => prev.filter(task => task.id !== taskId));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+  
+  return {
+    tasks,
+    loading,
+    error,
+    addTask,
+    updateTask,
+    deleteTask
+  };
+}
+
+// コンポーネントでの使用
+function TaskManager() {
+  const { 
+    tasks, 
+    loading, 
+    error, 
+    addTask, 
+    updateTask, 
+    deleteTask 
+  } = useTaskManagement();
+  
+  if (loading) return <LoadingSpinner />;
+  if (error) return <ErrorMessage message={error} />;
+  
+  return (
+    <div>
+      <TaskForm onSubmit={addTask} />
+      <TaskList 
+        tasks={tasks}
+        onUpdate={updateTask}
+        onDelete={deleteTask}
+      />
+    </div>
   );
 }
 ```
 
----
+### 2. フォーム管理ロジックの分離
+
+```typescript
+interface UseFormOptions<T> {
+  initialValues: T;
+  validationSchema?: (values: T) => Record<string, string>;
+  onSubmit: (values: T) => void | Promise<void>;
+}
+
+function useForm<T extends Record<string, any>>({
+  initialValues,
+  validationSchema,
+  onSubmit
+}: UseFormOptions<T>) {
+  const [values, setValues] = useState<T>(initialValues);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const setValue = useCallback(<K extends keyof T>(
+    field: K, 
+    value: T[K]
+  ) => {
+    setValues(prev => ({ ...prev, [field]: value }));
+    // エラーをクリア
+    if (errors[field as string]) {
+      setErrors(prev => ({ ...prev, [field]: undefined }));
+    }
+  }, [errors]);
+  
+  const validate = useCallback(() => {
+    if (!validationSchema) return true;
+    
+    const validationErrors = validationSchema(values);
+    setErrors(validationErrors);
+    
+    return Object.keys(validationErrors).length === 0;
+  }, [values, validationSchema]);
+  
+  const handleSubmit = useCallback(async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    
+    if (!validate()) return;
+    
+    setIsSubmitting(true);
+    try {
+      await onSubmit(values);
+    } catch (error) {
+      console.error('Form submission error:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [values, validate, onSubmit]);
+  
+  const reset = useCallback(() => {
+    setValues(initialValues);
+    setErrors({});
+    setIsSubmitting(false);
+  }, [initialValues]);
+  
+  return {
+    values,
+    errors,
+    isSubmitting,
+    setValue,
+    handleSubmit,
+    reset
+  };
+}
+
+// 使用例
+function TaskForm() {
+  const { values, errors, isSubmitting, setValue, handleSubmit } = useForm({
+    initialValues: {
+      title: '',
+      description: '',
+      priority: 'medium' as const
+    },
+    validationSchema: (values) => {
+      const errors: Record<string, string> = {};
+      if (!values.title.trim()) {
+        errors.title = 'タイトルは必須です';
+      }
+      return errors;
+    },
+    onSubmit: async (values) => {
+      await createTask(values);
+    }
+  });
+  
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        value={values.title}
+        onChange={(e) => setValue('title', e.target.value)}
+        placeholder="タスクタイトル"
+      />
+      {errors.title && <span className="error">{errors.title}</span>}
+      
+      <textarea
+        value={values.description}
+        onChange={(e) => setValue('description', e.target.value)}
+        placeholder="説明"
+      />
+      
+      <select
+        value={values.priority}
+        onChange={(e) => setValue('priority', e.target.value as any)}
+      >
+        <option value="low">低</option>
+        <option value="medium">中</option>
+        <option value="high">高</option>
+      </select>
+      
+      <button type="submit" disabled={isSubmitting}>
+        {isSubmitting ? '保存中...' : '保存'}
+      </button>
+    </form>
+  );
+}
+```
+
+## 📖 5. TasQ Flowのコンポーネント設計分析
+
+### 1. ガントチャートコンポーネントの設計
+
+```typescript
+// 複雑な機能を小さなコンポーネントに分割
+interface GanttChartProps {
+  tasks: Task[];
+  onTaskClick: (task: Task) => void;
+  onTaskUpdate: (taskId: string, updates: Partial<Task>) => void;
+}
+
+const GanttChart: React.FC<GanttChartProps> = ({ 
+  tasks, 
+  onTaskClick, 
+  onTaskUpdate 
+}) => {
+  return (
+    <div className="gantt-chart">
+      <GanttHeader />
+      <GanttTimeline />
+      <GanttTaskList 
+        tasks={tasks}
+        onTaskClick={onTaskClick}
+        onTaskUpdate={onTaskUpdate}
+      />
+    </div>
+  );
+};
+
+// 各部品を独立したコンポーネントとして実装
+const GanttHeader: React.FC = () => {
+  return (
+    <div className="gantt-header">
+      {/* ヘッダー内容 */}
+    </div>
+  );
+};
+
+const GanttTimeline: React.FC = () => {
+  return (
+    <div className="gantt-timeline">
+      {/* タイムライン内容 */}
+    </div>
+  );
+};
+
+const GanttTaskList: React.FC<{
+  tasks: Task[];
+  onTaskClick: (task: Task) => void;
+  onTaskUpdate: (taskId: string, updates: Partial<Task>) => void;
+}> = ({ tasks, onTaskClick, onTaskUpdate }) => {
+  return (
+    <div className="gantt-task-list">
+      {tasks.map(task => (
+        <GanttTaskRow
+          key={task.id}
+          task={task}
+          onClick={() => onTaskClick(task)}
+          onUpdate={(updates) => onTaskUpdate(task.id, updates)}
+        />
+      ))}
+    </div>
+  );
+};
+```
+
+### 2. 再利用可能なUIコンポーネント
+
+```typescript
+// 汎用的なモーダルコンポーネント
+interface ModalProps {
+  open: boolean;
+  onClose: () => void;
+  title?: string;
+  children: React.ReactNode;
+  maxWidth?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  fullScreen?: boolean;
+}
+
+const Modal: React.FC<ModalProps> = ({
+  open,
+  onClose,
+  title,
+  children,
+  maxWidth = 'md',
+  fullScreen = false
+}) => {
+  return (
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth={maxWidth}
+      fullScreen={fullScreen}
+      fullWidth
+    >
+      {title && (
+        <DialogTitle>
+          {title}
+          <IconButton
+            onClick={onClose}
+            sx={{ position: 'absolute', right: 8, top: 8 }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+      )}
+      <DialogContent>
+        {children}
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+// 特定の用途向けのモーダル
+const TaskEditModal: React.FC<{
+  open: boolean;
+  task: Task | null;
+  onClose: () => void;
+  onSave: (task: Task) => void;
+}> = ({ open, task, onClose, onSave }) => {
+  return (
+    <Modal
+      open={open}
+      onClose={onClose}
+      title={task ? 'タスク編集' : '新規タスク'}
+      maxWidth="md"
+    >
+      <TaskForm
+        initialTask={task}
+        onSubmit={onSave}
+        onCancel={onClose}
+      />
+    </Modal>
+  );
+};
+```
 
 ## 🏆 レベルアップチャレンジ
 
 ### 初級（⭐）
-1. 再利用可能なButtonコンポーネントを作ろう
-2. Loading表示コンポーネントを作ろう
+1. 単一責任原則に従ってコンポーネントを分割しよう
+2. プロップスの型定義を適切に設計しよう
 
 ### 中級（⭐⭐）
-1. FormコンポーネントとInputコンポーネントを組み合わせよう
-2. 条件付きレンダリングのヘルパーコンポーネントを作ろう
+1. Compound Componentsパターンを実装しよう
+2. カスタムフックでロジックを分離しよう
 
 ### 上級（⭐⭐⭐）
-1. 複雑なDataGridコンポーネントを設計しよう
-2. カスタムフックを活用したコンポーネント群を作ろう
+1. Polymorphic Componentsを作成しよう
+2. 複雑なフォームコンポーネントを設計・実装しよう
 
----
+## 📚 まとめ
 
-## 📖 参考資料
-
-### React公式
-- [Thinking in React](https://ja.react.dev/learn/thinking-in-react)
-- [Component Design Patterns](https://ja.react.dev/learn/passing-props-to-a-component)
-
-### デザインパターン
-- [React Design Patterns](https://www.patterns.dev/posts/react-patterns)
-- [Compound Components](https://kentcdodds.com/blog/compound-components-with-react-hooks)
-
----
-
-## 💡 まとめ
-
-コンポーネント設計は、**保守性と再利用性**を高める重要な技術です。
+良いコンポーネント設計は、**保守性・再利用性・テスタビリティ**を向上させます：
 
 ### 覚えておこう！
-1. **単一責任**：一つのコンポーネントは一つのことだけ
-2. **明確なインターフェース**：Propsは分かりやすく設計
-3. **合成可能**：小さなコンポーネントを組み合わせられる
-4. **再利用性**：他の場所でも使える汎用的な設計
+1. **単一責任**：一つのコンポーネントは一つのことだけを行う
+2. **プロップス設計**：直感的で拡張しやすいAPIを提供する
+3. **ロジック分離**：カスタムフックでビジネスロジックを分離する
+4. **適切な抽象化**：共通機能を再利用可能にする
 
-良いコンポーネント設計ができると、開発速度が格段に上がります。最初は時間がかかりますが、長期的には大きなメリットがあります！ 🧩
+設計パターンを理解して、美しく保守しやすいコンポーネントを作りましょう！
 
----
+## 🔗 次のステップ
 
-**学習ガイドは以上です。次は実際のWebアプリ開発に戻りましょう！**
+- [エラーハンドリング学習ガイド](./Error-Handling-Learning-Guide.md)でエラー処理を学ぶ
+- [付箋タブ実装チュートリアル](./Sticky-Notes-Background-Tutorial.md)で実践的な実装を学ぶ
 
----
+## 💡 参考リソース
 
-**質問や疑問があれば、いつでも開発チームにお聞きください！**
+- [React Design Patterns](https://react-patterns.com/)
+- [React Component Patterns](https://kentcdodds.com/blog/react-component-patterns)
+- [Component Design System](https://designsystem.digital.gov/components/)

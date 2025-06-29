@@ -1,11 +1,9 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   Box,
-  Paper,
   Typography,
   Button,
   ButtonGroup,
-  Grid2,
   LinearProgress,
   Chip,
   Alert,
@@ -19,13 +17,13 @@ import {
   IconButton,
   Collapse,
 } from '@mui/material';
+import Grid from '@mui/material/Grid';
 import {
   PlayArrow as StartIcon,
   Stop as StopIcon,
   RestartAlt as ResetIcon,
   ExpandMore as ExpandIcon,
   ExpandLess as CollapseIcon,
-  Memory as MemoryIcon,
   Speed as SpeedIcon,
   Assessment as ReportIcon,
   GetApp as ExportIcon,
@@ -36,7 +34,7 @@ import {
   measureMemoryUsage
 } from '../../data/performanceTestData';
 import { useAppStore } from '../../stores/useAppStore';
-import { performanceTestRunner, type PerformanceTestResult } from '../../utils/performanceTestRunner';
+import { performanceTestRunner } from '../../utils/performanceTestRunner';
 import { 
   StyledCard, 
   SectionHeader, 
@@ -79,42 +77,11 @@ export const PerformanceTestPanel: React.FC = () => {
     console.log('Performance test runner available:', !!performanceTestRunner);
   }, []);
   
-  // FPS測定
-  const measureFPS = useCallback(() => {
-    let lastTime = performance.now();
-    let frames = 0;
-    let fps = 0;
-    
-    const measureFrame = () => {
-      const currentTime = performance.now();
-      frames++;
-      
-      if (currentTime >= lastTime + 1000) {
-        fps = Math.round((frames * 1000) / (currentTime - lastTime));
-        frames = 0;
-        lastTime = currentTime;
-      }
-      
-      if (isRunning) {
-        requestAnimationFrame(measureFrame);
-      }
-    };
-    
-    requestAnimationFrame(measureFrame);
-    
-    return () => fps;
-  }, [isRunning]);
+  // FPS測定 (unused)
+  // const measureFPS = useCallback(() => { ... }, [isRunning]);
   
-  // レンダリング時間の測定
-  const measureRenderTime = useCallback(async () => {
-    const startTime = performance.now();
-    
-    // 強制的に再レンダリング
-    await new Promise(resolve => setTimeout(resolve, 0));
-    
-    const endTime = performance.now();
-    return endTime - startTime;
-  }, []);
+  // レンダリング時間の測定 (unused)
+  // const measureRenderTime = useCallback(async () => { ... }, []);
   
   // パフォーマンステストの実行
   const runTest = useCallback(async (scenario: keyof typeof performanceTestScenarios) => {
@@ -302,8 +269,8 @@ export const PerformanceTestPanel: React.FC = () => {
         </Box>
       </SectionHeader>
       
-      <Grid2 container spacing={3}>
-        <Grid2 size={{ xs: 12, md: 6 }}>
+      <Grid container spacing={3}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Typography variant="subtitle2" gutterBottom>
             テストシナリオ
           </Typography>
@@ -391,9 +358,9 @@ export const PerformanceTestPanel: React.FC = () => {
               </Typography>
             </Box>
           )}
-        </Grid2>
+        </Grid>
         
-        <Grid2 size={{ xs: 12, md: 6 }}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Typography variant="subtitle2" gutterBottom>
             現在のメトリクス
           </Typography>
@@ -404,8 +371,8 @@ export const PerformanceTestPanel: React.FC = () => {
               テストを実行してメトリクスを確認してください
             </Alert>
           )}
-        </Grid2>
-      </Grid2>
+        </Grid>
+      </Grid>
       
       <Collapse in={showDetails}>
         <Divider sx={{ my: 3 }} />

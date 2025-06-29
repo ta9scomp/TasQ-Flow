@@ -1,379 +1,832 @@
 # エラーハンドリング 学習ガイド
 
-**対象**: プログラミング初心者・学習者  
-**難易度**: ⭐⭐⭐☆☆（中級）  
-**学習時間**: 約2-3時間
+## 📚 はじめに
 
----
+このガイドでは、Reactアプリケーションにおけるエラーハンドリングの実装方法を学びます。TasQ Flowで使われているような、ユーザーフレンドリーで堅牢なエラー処理システムを構築しましょう。
 
-## 📚 このガイドで学べること
+## 🎯 学習目標
 
-- エラーハンドリングとは何か？
-- なぜエラーハンドリングが重要なのか？
-- Reactでのエラーハンドリングの基本
-- 実際のコードを見ながら理解を深める
-- エラーが起きた時の対処法
+- エラーの種類と原因を理解する
+- Error Boundaryの使い方を習得する
+- 非同期処理のエラーハンドリングを学ぶ
+- ユーザーフレンドリーなエラー表示を実装する
+- エラーログとモニタリングの基礎を理解する
 
----
+## 📖 1. エラーの種類
 
-## 🤔 エラーハンドリングって何？
-
-### 分かりやすい例え話
-
-想像してみてください。あなたが料理をしているとき：
-
-- **材料がない**：冷蔵庫に卵がない！
-- **火が強すぎる**：焦げちゃった！
-- **調味料を入れ過ぎた**：しょっぱくなった！
-
-プログラムでも同じようなことが起こります：
-
-- **データがない**：サーバーからデータが来ない！
-- **ネットワークエラー**：インターネットに繋がらない！
-- **バグ**：プログラムが予期しない動きをした！
-
-**エラーハンドリング**とは、こうした「想定外の出来事」に対して、適切に対処する仕組みのことです。
-
----
-
-## 🎯 なぜ大切なの？
-
-### ❌ エラーハンドリングがない場合
-
-```
-アプリが突然クラッシュ！
-白い画面になって何も表示されない...
-ユーザー：「えっ、何これ？」😰
-```
-
-### ✅ エラーハンドリングがある場合
-
-```
-「申し訳ございません。一時的な問題が発生しました。
-[再試行] ボタンを押すか、しばらくお待ちください。」
-ユーザー：「わかりやすい！」😊
-```
-
----
-
-## 🧱 基本的な仕組み
-
-### 1. エラーをキャッチする
+### 1. JavaScript エラー
 
 ```typescript
-// 悪い例：エラーが起きると止まる
-function badExample() {
-  const data = getSomeData(); // ここでエラーが起きるかも
-  return data.name; // エラーが起きると止まる！
+// 構文エラー
+function badFunction() {
+  return "Hello World" // ← セミコロンがないとエラー（実際は自動補完される）
 }
 
-// 良い例：エラーをキャッチする
-function goodExample() {
+// 実行時エラー
+function divideByZero(a: number, b: number) {
+  if (b === 0) {
+    throw new Error("ゼロで割ることはできません");
+  }
+  return a / b;
+}
+
+// 型エラー
+function processUser(user: { name: string; age: number }) {
+  return user.name.toUpperCase(); // userがnullだとエラー
+}
+```
+
+### 2. React エラー
+
+```typescript
+// レンダリングエラー
+function BuggyComponent({ user }) {
+  return <div>{user.name}</div>; // userがundefinedだとエラー
+}
+
+// useEffect内のエラー
+function DataComponent() {
+  const [data, setData] = useState(null);
+  
+  useEffect(() => {
+    fetchData()
+      .then(setData)
+      .catch(console.error); // エラーを適切に処理
+  }, []);
+  
+  return <div>{data?.name}</div>;
+}
+```
+
+### 3. 非同期エラー
+
+```typescript
+// API通信エラー
+async function fetchUserData(userId: string) {
   try {
-    const data = getSomeData();
-    return data.name;
+    const response = await fetch(`/api/users/${userId}`);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    return await response.json();
   } catch (error) {
-    console.log('エラーが起きました:', error);
-    return 'データが取得できませんでした';
+    if (error instanceof TypeError) {
+      throw new Error("ネットワーク接続に問題があります");
+    }
+    throw error;
   }
 }
 ```
 
-### 2. わかりやすく説明
+## 📖 2. Error Boundary
+
+### 基本的なError Boundary
 
 ```typescript
-// 初心者向けの説明
-try {
-  // ここで何かを試す（try = 試す）
-  const result = riskyOperation();
-  return result;
-} catch (error) {
-  // エラーが起きたらここで捕まえる（catch = 捕まえる）
-  console.log('問題が起きました！');
-  return null;
+import React, { Component, ErrorInfo, ReactNode } from 'react';
+
+interface Props {
+  children: ReactNode;
+  fallback?: ReactNode;
+  onError?: (error: Error, errorInfo: ErrorInfo) => void;
 }
-```
 
----
+interface State {
+  hasError: boolean;
+  error?: Error;
+}
 
-## 🎨 Reactでのエラーハンドリング
-
-### ErrorBoundary（エラーの境界線）
-
-ErrorBoundaryは、エラーが起きた時に「この範囲だけ」を特別な表示にする仕組みです。
-
-```typescript
-// 簡単な例で理解しよう
-class SimpleErrorBoundary extends Component {
-  constructor(props) {
+class ErrorBoundary extends Component<Props, State> {
+  constructor(props: Props) {
     super(props);
-    this.state = { hasError: false }; // エラーが起きたかどうかを記録
+    this.state = { hasError: false };
   }
 
-  // エラーが起きたときに呼ばれる特別な関数
-  static getDerivedStateFromError(error) {
-    return { hasError: true }; // 「エラーが起きた」と記録
+  static getDerivedStateFromError(error: Error): State {
+    // エラーが発生した時の状態更新
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    // エラーログの送信
+    console.error('Error Boundary caught an error:', error, errorInfo);
+    
+    // 外部のエラー監視サービスに送信
+    this.props.onError?.(error, errorInfo);
   }
 
   render() {
     if (this.state.hasError) {
-      // エラーが起きた時の表示
+      // カスタムフォールバックUI
+      if (this.props.fallback) {
+        return this.props.fallback;
+      }
+      
+      // デフォルトのエラー表示
       return (
-        <div>
-          <h2>😢 何か問題が起きました</h2>
-          <p>申し訳ございません。ページをリロードしてください。</p>
+        <div style={{
+          padding: '2rem',
+          textAlign: 'center',
+          border: '1px solid #ff6b6b',
+          borderRadius: '8px',
+          backgroundColor: '#fff5f5'
+        }}>
+          <h2>おっと！何かが間違いました</h2>
+          <p>申し訳ございませんが、予期しないエラーが発生しました。</p>
+          <details style={{ marginTop: '1rem', textAlign: 'left' }}>
+            <summary>技術的な詳細</summary>
+            <pre style={{ marginTop: '0.5rem', fontSize: '0.875rem' }}>
+              {this.state.error?.toString()}
+            </pre>
+          </details>
+          <button
+            onClick={() => window.location.reload()}
+            style={{
+              marginTop: '1rem',
+              padding: '0.5rem 1rem',
+              backgroundColor: '#ff6b6b',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            ページを再読み込み
+          </button>
         </div>
       );
     }
 
-    // 普通の時はそのまま表示
     return this.props.children;
   }
 }
 ```
 
-### 使い方
+### 関数型Error Boundary（React 18+）
 
 ```typescript
-function App() {
+import { ErrorBoundary } from 'react-error-boundary';
+
+function ErrorFallback({ error, resetErrorBoundary }: {
+  error: Error;
+  resetErrorBoundary: () => void;
+}) {
   return (
-    <SimpleErrorBoundary>
-      <Header />
-      <MainContent />
-      <Footer />
-    </SimpleErrorBoundary>
+    <div role="alert" className="error-fallback">
+      <h2>Something went wrong:</h2>
+      <pre>{error.message}</pre>
+      <button onClick={resetErrorBoundary}>Try again</button>
+    </div>
+  );
+}
+
+function MyApp() {
+  return (
+    <ErrorBoundary
+      FallbackComponent={ErrorFallback}
+      onError={(error, errorInfo) => {
+        // エラーログサービスに送信
+        console.error('Error caught by boundary:', error, errorInfo);
+      }}
+      onReset={() => {
+        // エラー状態をリセットする際の処理
+        window.location.reload();
+      }}
+    >
+      <App />
+    </ErrorBoundary>
   );
 }
 ```
 
-この場合、`Header`、`MainContent`、`Footer`のどこかでエラーが起きても、エラーメッセージが表示されてアプリが完全に止まることはありません。
+## 📖 3. 非同期エラーハンドリング
 
----
-
-## 🔧 実際のTasQ Flowでの実装
-
-### 1. エラーの種類を分ける
-
-TasQ Flowでは、エラーを種類分けしています：
+### カスタムフックでのエラー管理
 
 ```typescript
-// エラーの種類
-interface ErrorType {
-  network: 'ネットワーク';     // インターネット接続の問題
-  validation: 'バリデーション'; // 入力内容の問題
-  permission: '権限';         // アクセス権限の問題
-  data: 'データ';            // データの問題
-  performance: 'パフォーマンス'; // 動作が重い問題
+interface UseAsyncState<T> {
+  data: T | null;
+  loading: boolean;
+  error: string | null;
+}
+
+function useAsync<T>(
+  asyncFunction: () => Promise<T>,
+  dependencies: any[] = []
+): UseAsyncState<T> & {
+  execute: () => Promise<void>;
+  reset: () => void;
+} {
+  const [state, setState] = useState<UseAsyncState<T>>({
+    data: null,
+    loading: false,
+    error: null
+  });
+
+  const execute = useCallback(async () => {
+    setState(prev => ({ ...prev, loading: true, error: null }));
+    
+    try {
+      const result = await asyncFunction();
+      setState({ data: result, loading: false, error: null });
+    } catch (error) {
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : '不明なエラーが発生しました';
+      
+      setState({ data: null, loading: false, error: errorMessage });
+    }
+  }, dependencies);
+
+  const reset = useCallback(() => {
+    setState({ data: null, loading: false, error: null });
+  }, []);
+
+  useEffect(() => {
+    execute();
+  }, [execute]);
+
+  return { ...state, execute, reset };
+}
+
+// 使用例
+function UserProfile({ userId }: { userId: string }) {
+  const { data: user, loading, error, execute } = useAsync(
+    () => fetchUser(userId),
+    [userId]
+  );
+
+  if (loading) return <div>読み込み中...</div>;
+  
+  if (error) {
+    return (
+      <div className="error-container">
+        <p>エラー: {error}</p>
+        <button onClick={execute}>再試行</button>
+      </div>
+    );
+  }
+
+  if (!user) return <div>ユーザーが見つかりません</div>;
+
+  return (
+    <div>
+      <h1>{user.name}</h1>
+      <p>{user.email}</p>
+    </div>
+  );
 }
 ```
 
-### 2. ユーザーに優しい通知
+### API クライアントでのエラーハンドリング
 
 ```typescript
-// エラーメッセージの例
-const userFriendlyMessages = {
-  network: {
-    title: 'インターネット接続エラー',
-    message: 'インターネット接続を確認してください',
-    action: '再試行'
-  },
-  validation: {
-    title: '入力内容エラー',
-    message: '入力内容を確認してください',
-    action: '修正'
+class ApiError extends Error {
+  constructor(
+    message: string,
+    public status: number,
+    public code?: string
+  ) {
+    super(message);
+    this.name = 'ApiError';
   }
-};
-```
+}
 
-### 3. 自動復旧機能
+class ApiClient {
+  private baseUrl: string;
 
-```typescript
-// 簡単な自動復旧の例
-function autoRetry(operation, maxRetries = 3) {
-  let retryCount = 0;
+  constructor(baseUrl: string) {
+    this.baseUrl = baseUrl;
+  }
 
-  function tryOperation() {
+  private async request<T>(
+    endpoint: string, 
+    options: RequestInit = {}
+  ): Promise<T> {
+    const url = `${this.baseUrl}${endpoint}`;
+    
     try {
-      return operation(); // 操作を試す
-    } catch (error) {
-      retryCount++;
-      
-      if (retryCount < maxRetries) {
-        console.log(`失敗しました。${retryCount}回目の再試行...`);
-        setTimeout(tryOperation, 1000); // 1秒後に再試行
-      } else {
-        console.log('最大再試行回数に達しました');
-        throw error;
+      const response = await fetch(url, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...options.headers,
+        },
+        ...options,
+      });
+
+      // HTTPステータスコードのチェック
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        
+        throw new ApiError(
+          errorData.message || `HTTP ${response.status}: ${response.statusText}`,
+          response.status,
+          errorData.code
+        );
       }
+
+      return await response.json();
+    } catch (error) {
+      // ネットワークエラーの処理
+      if (error instanceof TypeError) {
+        throw new ApiError(
+          'ネットワーク接続に問題があります。インターネット接続を確認してください。',
+          0,
+          'NETWORK_ERROR'
+        );
+      }
+      
+      // その他のエラーはそのまま再スロー
+      throw error;
     }
   }
 
-  return tryOperation();
-}
-```
-
----
-
-## 🎮 ハンズオン：簡単な例を作ってみよう
-
-### ステップ1: 基本のエラーハンドリング
-
-```typescript
-// エラーが起きる可能性がある関数
-function riskyCalculation(a: number, b: number) {
-  if (b === 0) {
-    throw new Error('0で割ることはできません！');
+  async getUser(id: string) {
+    return this.request<User>(`/users/${id}`);
   }
-  return a / b;
-}
 
-// エラーハンドリング付きの関数
-function safeCalculation(a: number, b: number) {
-  try {
-    const result = riskyCalculation(a, b);
-    console.log(`結果: ${result}`);
-    return result;
-  } catch (error) {
-    console.log(`エラー: ${error.message}`);
-    return null;
+  async createTask(task: Omit<Task, 'id'>) {
+    return this.request<Task>('/tasks', {
+      method: 'POST',
+      body: JSON.stringify(task),
+    });
   }
 }
 
-// 試してみよう！
-safeCalculation(10, 2); // 結果: 5
-safeCalculation(10, 0); // エラー: 0で割ることはできません！
-```
+// 使用例
+const apiClient = new ApiClient('/api');
 
-### ステップ2: Reactコンポーネントでのエラーハンドリング
+function TaskCreator() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-```typescript
-import React, { useState } from 'react';
+  const handleCreateTask = async (taskData: Omit<Task, 'id'>) => {
+    setLoading(true);
+    setError(null);
 
-function Calculator() {
-  const [result, setResult] = useState<string>('');
-  const [error, setError] = useState<string>('');
-
-  const handleCalculation = (a: number, b: number) => {
     try {
-      // エラーをリセット
-      setError('');
-      
-      if (b === 0) {
-        throw new Error('0で割ることはできません');
+      await apiClient.createTask(taskData);
+      // 成功時の処理
+    } catch (error) {
+      if (error instanceof ApiError) {
+        switch (error.status) {
+          case 400:
+            setError('入力データに問題があります。');
+            break;
+          case 401:
+            setError('認証が必要です。ログインしてください。');
+            break;
+          case 403:
+            setError('この操作を実行する権限がありません。');
+            break;
+          case 500:
+            setError('サーバーエラーが発生しました。しばらく待ってから再試行してください。');
+            break;
+          default:
+            setError(error.message);
+        }
+      } else {
+        setError('予期しないエラーが発生しました。');
       }
-      
-      const calculation = a / b;
-      setResult(`結果: ${calculation}`);
-    } catch (err) {
-      setError(err.message);
-      setResult('');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div>
-      <h3>電卓アプリ</h3>
-      <button onClick={() => handleCalculation(10, 2)}>
-        10 ÷ 2 を計算
-      </button>
-      <button onClick={() => handleCalculation(10, 0)}>
-        10 ÷ 0 を計算（エラーになる）
-      </button>
-      
-      {result && <p style={{ color: 'green' }}>{result}</p>}
-      {error && <p style={{ color: 'red' }}>エラー: {error}</p>}
+      {error && (
+        <div className="error-alert">
+          {error}
+        </div>
+      )}
+      <TaskForm onSubmit={handleCreateTask} loading={loading} />
     </div>
   );
 }
 ```
 
----
+## 📖 4. エラー通知システム
 
-## 🎁 実践的なTips
-
-### 1. エラーメッセージは分かりやすく
+### グローバルエラー通知
 
 ```typescript
-// ❌ 悪い例
-throw new Error('ERR_INVALID_INPUT_VALIDATION_FAILED');
-
-// ✅ 良い例
-throw new Error('名前は3文字以上で入力してください');
-```
-
-### 2. ログを残そう
-
-```typescript
-function handleError(error: Error, context: string) {
-  // 開発者向けの詳細ログ
-  console.error(`エラー発生場所: ${context}`, error);
-  
-  // ユーザー向けの分かりやすいメッセージ
-  showUserMessage('申し訳ございません。しばらくしてから再度お試しください。');
+interface ErrorNotification {
+  id: string;
+  message: string;
+  type: 'error' | 'warning' | 'info';
+  duration?: number;
+  action?: {
+    label: string;
+    onClick: () => void;
+  };
 }
-```
 
-### 3. 復旧可能なエラーには「再試行」ボタン
+interface ErrorNotificationContextValue {
+  notifications: ErrorNotification[];
+  addNotification: (notification: Omit<ErrorNotification, 'id'>) => void;
+  removeNotification: (id: string) => void;
+  clearAll: () => void;
+}
 
-```typescript
-function NetworkErrorComponent({ onRetry }: { onRetry: () => void }) {
+const ErrorNotificationContext = createContext<ErrorNotificationContextValue | null>(null);
+
+export function ErrorNotificationProvider({ children }: { children: ReactNode }) {
+  const [notifications, setNotifications] = useState<ErrorNotification[]>([]);
+
+  const addNotification = useCallback((notification: Omit<ErrorNotification, 'id'>) => {
+    const id = Math.random().toString(36).substr(2, 9);
+    const newNotification = { ...notification, id };
+    
+    setNotifications(prev => [...prev, newNotification]);
+
+    // 自動削除
+    if (notification.duration !== 0) {
+      setTimeout(() => {
+        removeNotification(id);
+      }, notification.duration || 5000);
+    }
+  }, []);
+
+  const removeNotification = useCallback((id: string) => {
+    setNotifications(prev => prev.filter(notification => notification.id !== id));
+  }, []);
+
+  const clearAll = useCallback(() => {
+    setNotifications([]);
+  }, []);
+
   return (
-    <div>
-      <p>ネットワークエラーが発生しました</p>
-      <button onClick={onRetry}>再試行</button>
+    <ErrorNotificationContext.Provider value={{
+      notifications,
+      addNotification,
+      removeNotification,
+      clearAll
+    }}>
+      {children}
+      <ErrorNotificationDisplay />
+    </ErrorNotificationContext.Provider>
+  );
+}
+
+function ErrorNotificationDisplay() {
+  const context = useContext(ErrorNotificationContext);
+  if (!context) return null;
+
+  const { notifications, removeNotification } = context;
+
+  return (
+    <div className="error-notifications">
+      {notifications.map(notification => (
+        <div
+          key={notification.id}
+          className={`notification notification-${notification.type}`}
+        >
+          <div className="notification-content">
+            <p>{notification.message}</p>
+            {notification.action && (
+              <button
+                onClick={notification.action.onClick}
+                className="notification-action"
+              >
+                {notification.action.label}
+              </button>
+            )}
+          </div>
+          <button
+            onClick={() => removeNotification(notification.id)}
+            className="notification-close"
+          >
+            ×
+          </button>
+        </div>
+      ))}
     </div>
   );
 }
+
+// カスタムフック
+export function useErrorNotification() {
+  const context = useContext(ErrorNotificationContext);
+  if (!context) {
+    throw new Error('useErrorNotification must be used within ErrorNotificationProvider');
+  }
+  return context;
+}
 ```
 
----
+### 使用例
+
+```typescript
+function TaskManager() {
+  const { addNotification } = useErrorNotification();
+
+  const handleError = (error: Error) => {
+    addNotification({
+      type: 'error',
+      message: error.message,
+      action: {
+        label: '再試行',
+        onClick: () => {
+          // 再試行ロジック
+        }
+      }
+    });
+  };
+
+  const handleTaskSave = async (task: Task) => {
+    try {
+      await saveTask(task);
+      addNotification({
+        type: 'info',
+        message: 'タスクが保存されました',
+        duration: 3000
+      });
+    } catch (error) {
+      handleError(error as Error);
+    }
+  };
+
+  return <TaskForm onSave={handleTaskSave} />;
+}
+```
+
+## 📖 5. TasQ Flowのエラーハンドリング
+
+### エラー監視とロギング
+
+```typescript
+interface ErrorLog {
+  id: string;
+  timestamp: Date;
+  level: 'error' | 'warning' | 'info';
+  message: string;
+  stack?: string;
+  userAgent?: string;
+  url?: string;
+  userId?: string;
+  context?: Record<string, any>;
+}
+
+class ErrorLogger {
+  private logs: ErrorLog[] = [];
+  private maxLogs = 100;
+
+  log(level: ErrorLog['level'], message: string, context?: Record<string, any>) {
+    const log: ErrorLog = {
+      id: crypto.randomUUID(),
+      timestamp: new Date(),
+      level,
+      message,
+      userAgent: navigator.userAgent,
+      url: window.location.href,
+      context
+    };
+
+    this.logs.unshift(log);
+    if (this.logs.length > this.maxLogs) {
+      this.logs = this.logs.slice(0, this.maxLogs);
+    }
+
+    // 開発環境ではコンソールにも出力
+    if (process.env.NODE_ENV === 'development') {
+      console[level === 'error' ? 'error' : 'log'](`[${level.toUpperCase()}]`, message, context);
+    }
+
+    // 本番環境では外部サービスに送信
+    if (process.env.NODE_ENV === 'production' && level === 'error') {
+      this.sendToExternalService(log);
+    }
+  }
+
+  private async sendToExternalService(log: ErrorLog) {
+    try {
+      await fetch('/api/errors', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(log)
+      });
+    } catch (error) {
+      console.error('Failed to send error log:', error);
+    }
+  }
+
+  getLogs(): ErrorLog[] {
+    return [...this.logs];
+  }
+
+  clearLogs() {
+    this.logs = [];
+  }
+}
+
+export const errorLogger = new ErrorLogger();
+
+// グローバルエラーハンドラー
+window.addEventListener('error', (event) => {
+  errorLogger.log('error', event.error?.message || 'Unknown error', {
+    filename: event.filename,
+    lineno: event.lineno,
+    colno: event.colno,
+    stack: event.error?.stack
+  });
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+  errorLogger.log('error', `Unhandled promise rejection: ${event.reason}`, {
+    reason: event.reason
+  });
+});
+```
+
+### フォームバリデーションエラー
+
+```typescript
+interface FormErrors {
+  [field: string]: string | undefined;
+}
+
+interface UseFormValidationOptions<T> {
+  validationRules: {
+    [K in keyof T]?: Array<(value: T[K]) => string | undefined>;
+  };
+  onSubmit: (values: T) => Promise<void> | void;
+}
+
+function useFormValidation<T extends Record<string, any>>({
+  validationRules,
+  onSubmit
+}: UseFormValidationOptions<T>) {
+  const [values, setValues] = useState<Partial<T>>({});
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const validateField = useCallback((field: keyof T, value: any): string | undefined => {
+    const rules = validationRules[field];
+    if (!rules) return undefined;
+
+    for (const rule of rules) {
+      const error = rule(value);
+      if (error) return error;
+    }
+    return undefined;
+  }, [validationRules]);
+
+  const setValue = useCallback(<K extends keyof T>(field: K, value: T[K]) => {
+    setValues(prev => ({ ...prev, [field]: value }));
+    
+    // リアルタイムバリデーション
+    const error = validateField(field, value);
+    setErrors(prev => ({ ...prev, [field]: error }));
+  }, [validateField]);
+
+  const validateAll = useCallback((): boolean => {
+    const newErrors: FormErrors = {};
+    let hasErrors = false;
+
+    Object.keys(validationRules).forEach(field => {
+      const error = validateField(field, values[field]);
+      if (error) {
+        newErrors[field] = error;
+        hasErrors = true;
+      }
+    });
+
+    setErrors(newErrors);
+    return !hasErrors;
+  }, [values, validationRules, validateField]);
+
+  const handleSubmit = useCallback(async (e?: React.FormEvent) => {
+    e?.preventDefault();
+
+    if (!validateAll()) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await onSubmit(values as T);
+    } catch (error) {
+      // サーバーサイドエラーの処理
+      if (error instanceof ApiError && error.status === 400) {
+        // フィールド固有のエラーを設定
+        const fieldErrors = error.context?.fieldErrors || {};
+        setErrors(prev => ({ ...prev, ...fieldErrors }));
+      } else {
+        throw error; // その他のエラーは上位に委譲
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [values, validateAll, onSubmit]);
+
+  return {
+    values,
+    errors,
+    isSubmitting,
+    setValue,
+    handleSubmit,
+    validateAll
+  };
+}
+
+// バリデーションルール
+const createTaskValidationRules = {
+  title: [
+    (value: string) => !value?.trim() ? 'タイトルは必須です' : undefined,
+    (value: string) => value?.length > 100 ? 'タイトルは100文字以内で入力してください' : undefined
+  ],
+  dueDate: [
+    (value: Date) => !value ? '期限は必須です' : undefined,
+    (value: Date) => value < new Date() ? '期限は今日以降の日付を選択してください' : undefined
+  ]
+};
+
+// 使用例
+function TaskForm() {
+  const { addNotification } = useErrorNotification();
+  
+  const { values, errors, isSubmitting, setValue, handleSubmit } = useFormValidation({
+    validationRules: createTaskValidationRules,
+    onSubmit: async (values) => {
+      try {
+        await createTask(values);
+        addNotification({
+          type: 'info',
+          message: 'タスクが作成されました'
+        });
+      } catch (error) {
+        addNotification({
+          type: 'error',
+          message: 'タスクの作成に失敗しました'
+        });
+        throw error; // 再スローしてフォームエラーとして処理
+      }
+    }
+  });
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <div>
+        <input
+          value={values.title || ''}
+          onChange={(e) => setValue('title', e.target.value)}
+          placeholder="タスクタイトル"
+        />
+        {errors.title && <span className="error">{errors.title}</span>}
+      </div>
+      
+      <div>
+        <input
+          type="date"
+          value={values.dueDate || ''}
+          onChange={(e) => setValue('dueDate', new Date(e.target.value))}
+        />
+        {errors.dueDate && <span className="error">{errors.dueDate}</span>}
+      </div>
+      
+      <button type="submit" disabled={isSubmitting}>
+        {isSubmitting ? '作成中...' : '作成'}
+      </button>
+    </form>
+  );
+}
+```
 
 ## 🏆 レベルアップチャレンジ
 
 ### 初級（⭐）
-1. try-catchを使った簡単なエラーハンドリングを書いてみよう
-2. エラーが起きた時にアラートを表示するコードを書いてみよう
+1. 基本的なError Boundaryを実装しよう
+2. シンプルなエラー通知システムを作ろう
 
 ### 中級（⭐⭐）
-1. 異なる種類のエラーを判定して、それぞれ違うメッセージを表示しよう
-2. 自動で3回まで再試行する機能を作ってみよう
+1. 非同期処理用のカスタムフックを作ろう
+2. フォームバリデーションエラーを実装しよう
 
 ### 上級（⭐⭐⭐）
-1. ErrorBoundaryコンポーネントを自分で作ってみよう
-2. エラーログを保存して、後で確認できる機能を作ってみよう
+1. エラーログシステムを構築しよう
+2. ユーザーフレンドリーなエラー復旧機能を実装しよう
 
----
+## 📚 まとめ
 
-## 📖 参考資料
-
-### Reactの公式ドキュメント
-- [Error Boundaries](https://ja.react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary)
-
-### MDN Web Docs（日本語）
-- [try...catch文](https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Statements/try...catch)
-- [Error オブジェクト](https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Error)
-
-### TypeScript公式ドキュメント
-- [Exception Handling](https://www.typescriptlang.org/docs/handbook/2/narrowing.html#control-flow-analysis)
-
----
-
-## 💡 まとめ
-
-エラーハンドリングは、**ユーザーに優しいアプリ**を作るために欠かせない技術です。
+適切なエラーハンドリングは、**ユーザー体験と開発効率**を大きく向上させます：
 
 ### 覚えておこう！
-1. **try-catch**でエラーをキャッチ
-2. **分かりやすいメッセージ**でユーザーに説明
-3. **再試行機能**で復旧のチャンスを提供
-4. **ログ**で原因を特定できるようにする
+1. **Error Boundary**：React コンポーネントのエラーをキャッチ
+2. **非同期エラー**：try-catch とカスタムフックで処理
+3. **ユーザビリティ**：分かりやすいエラーメッセージと復旧手段
+4. **ログとモニタリング**：問題の早期発見と解決
 
-最初は難しく感じるかもしれませんが、一歩ずつ実践していけば必ず身につきます。頑張ってください！ 🚀
+エラーを恐れずに、適切に処理して素晴らしいアプリケーションを作りましょう！
 
----
+## 🔗 次のステップ
 
-**次のステップ**: [Reactコンポーネント設計 学習ガイド](./React-Component-Design-Learning-Guide.md)
+- [付箋タブ実装チュートリアル](./Sticky-Notes-Background-Tutorial.md)で実践的な実装を学ぶ
 
----
+## 💡 参考リソース
 
-**質問や疑問があれば、いつでも開発チームにお聞きください！**
+- [React Error Boundaries](https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary)
+- [Error Handling Best Practices](https://blog.bitsrc.io/react-error-handling-with-react-error-boundary-61b89fa0d87b)
+- [JavaScript Error Handling](https://developer.mozilla.org/ja/docs/Web/JavaScript/Guide/Control_flow_and_error_handling)

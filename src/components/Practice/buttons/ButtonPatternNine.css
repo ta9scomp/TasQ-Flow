@@ -1,0 +1,118 @@
+/* Tailwind inspired Sky Blue Button - Pattern 9 */
+.pattern-nine-button {
+  position: relative !important;
+  overflow: hidden !important;
+  width: 150px !important;
+  height: 150px !important;
+  min-width: 150px !important;
+  border-radius: 8px !important;
+  
+  /* ベースの背景 - Sky Blue */
+  background: #075985 !important; /* bg-sky-800 */
+  
+  /* テキストスタイル */
+  color: #f9fafb !important; /* text-gray-50 */
+  font-weight: 700 !important; /* font-bold */
+  text-align: left !important; /* text-left */
+  padding: 12px !important; /* p-3 */
+  font-size: 16px !important; /* text-base */
+  
+  /* ボーダー */
+  border: 1px solid #075985 !important;
+  
+  /* 下線効果 */
+  text-decoration: underline !important; /* underline */
+  text-underline-offset: 2px !important; /* underline-offset-2 */
+  
+  /* トランジション */
+  transition: all 0.5s ease !important; /* duration-500 */
+  transform-origin: left !important; /* origin-left */
+  
+  /* テキストを前面に表示 */
+  z-index: 20 !important;
+}
+
+/* ボタン内のテキストを確実に前面に表示 */
+.pattern-nine-button .MuiButton-label,
+.pattern-nine-button > span {
+  position: relative !important;
+  z-index: 25 !important;
+}
+
+/* テキストコンテンツを前面に表示 */
+.pattern-nine-button::first-letter,
+.pattern-nine-button * {
+  position: relative !important;
+  z-index: 25 !important;
+}
+
+/* Before擬似要素 - 右上の青いぼかし円 */
+.pattern-nine-button::before {
+  content: '';
+  position: absolute;
+  width: 48px; /* w-12 */
+  height: 48px; /* h-12 */
+  right: 4px; /* right-1 */
+  top: 4px; /* top-1 */
+  z-index: 5;
+  background: #38bdf8; /* bg-sky-400 */
+  border-radius: 50%; /* rounded-full */
+  filter: blur(8px); /* blur-lg */
+  transition: all 0.5s ease; /* before:duration-500 */
+  pointer-events: none;
+}
+
+/* After擬似要素 - 右の大きなシアン円 */
+.pattern-nine-button::after {
+  content: '';
+  position: absolute;
+  z-index: 5;
+  width: 80px; /* w-20 */
+  height: 80px; /* h-20 */
+  background: #0891b2; /* bg-cyan-600 */
+  right: 32px; /* right-8 */
+  top: 12px; /* top-3 */
+  border-radius: 50%; /* rounded-full */
+  filter: blur(4px); /* blur */
+  transition: all 0.5s ease; /* after:duration-500 */
+  pointer-events: none;
+}
+
+/* ホバー状態 */
+.pattern-nine-button:hover {
+  border-color: #7dd3fc !important; /* hover:border-sky-300 */
+  background: #7dd3fc !important; /* hover:bg-sky-300 */
+  color: #0c4a6e !important; /* hover:text-sky-900 */
+  text-decoration: underline !important; /* hover:underline */
+  text-underline-offset: 4px !important; /* hover:underline-offset-4 */
+  text-decoration-thickness: 2px !important; /* hover:decoration-2 */
+  transition: all 0.5s ease !important; /* hover:duration-500 */
+}
+
+/* ホバー時のbefore要素 */
+.pattern-nine-button:hover::before {
+  top: 32px; /* hover:before:top-8 */
+  right: 64px; /* hover:before:right-16 */
+  bottom: -32px; /* hover:before:-bottom-8 */
+  filter: blur(0); /* hover:before:blur-none */
+  transition: all 0.5s ease; /* group-hover:before:duration-500 */
+}
+
+/* ホバー時のafter要素 */
+.pattern-nine-button:hover::after {
+  right: -8px; /* hover:after:-right-2 */
+  transform: scale(1.5); /* hover:after:scale-150 */
+  filter: blur(0); /* hover:after:blur-none */
+  transition: all 1s ease; /* group-hover:after:duration-1000 */
+}
+
+/* アクティブ状態 */
+.pattern-nine-button:active {
+  transform: scale(0.98) !important;
+  transition: all 0.1s ease !important;
+}
+
+/* フォーカス状態 */
+.pattern-nine-button:focus {
+  outline: none !important;
+}

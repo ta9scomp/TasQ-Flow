@@ -15,12 +15,10 @@ import {
   Collapse,
 } from '@mui/material';
 import {
-  Assignment as ProjectIcon,
   ExpandLess,
   ExpandMore,
 } from '@mui/icons-material';
 import { getProjectsByTeamId, getProjectTeamById } from '../../data/sampleProjectTeams';
-import type { Project } from '../../types/task';
 
 interface ProjectSidebarProps {
   open: boolean;

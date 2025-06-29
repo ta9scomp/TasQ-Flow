@@ -12,8 +12,8 @@ import {
   CardContent,
   Chip,
   Divider,
-  Grid2,
 } from '@mui/material';
+import Grid from '@mui/material/Grid';
 import {
   Warning as WarningIcon,
   Person as PersonIcon,
@@ -81,8 +81,8 @@ export const ConflictResolutionDialog: React.FC<ConflictResolutionDialogProps> =
           変更内容の比較
         </Typography>
         
-        <Grid2 container spacing={2}>
-          <Grid2 size={6}>
+        <Grid container spacing={2}>
+          <Grid size={6}>
             <Card sx={{ border: '2px solid #1976d2' }}>
               <CardContent>
                 <Typography variant="subtitle1" color="primary" gutterBottom>
@@ -113,9 +113,9 @@ export const ConflictResolutionDialog: React.FC<ConflictResolutionDialogProps> =
                 })}
               </CardContent>
             </Card>
-          </Grid2>
+          </Grid>
           
-          <Grid2 size={6}>
+          <Grid size={6}>
             <Card sx={{ border: '2px solid #f57c00' }}>
               <CardContent>
                 <Typography variant="subtitle1" color="warning.main" gutterBottom>
@@ -146,8 +146,8 @@ export const ConflictResolutionDialog: React.FC<ConflictResolutionDialogProps> =
                 })}
               </CardContent>
             </Card>
-          </Grid2>
-        </Grid2>
+          </Grid>
+        </Grid>
       </Box>
     );
   };
@@ -174,24 +174,24 @@ export const ConflictResolutionDialog: React.FC<ConflictResolutionDialogProps> =
         </Alert>
 
         <Box sx={{ mb: 3 }}>
-          <Grid2 container spacing={2}>
-            <Grid2 size={6}>
+          <Grid container spacing={2}>
+            <Grid size={6}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <PersonIcon fontSize="small" />
                 <Typography variant="body2">
                   競合ユーザー: <strong>{currentConflict.conflictingUser}</strong>
                 </Typography>
               </Box>
-            </Grid2>
-            <Grid2 size={6}>
+            </Grid>
+            <Grid size={6}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <TimeIcon fontSize="small" />
                 <Typography variant="body2">
                   発生時刻: {format(new Date(currentConflict.timestamp), 'yyyy/MM/dd HH:mm:ss', { locale: ja })}
                 </Typography>
               </Box>
-            </Grid2>
-          </Grid2>
+            </Grid>
+          </Grid>
         </Box>
 
         <Divider sx={{ mb: 2 }} />
