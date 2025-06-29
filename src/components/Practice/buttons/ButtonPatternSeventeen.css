@@ -1,0 +1,220 @@
+/* 3D Hover カード - カーソル位置による動的角度変更 */
+
+.card-3d-container {
+  perspective: 500px;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.card-3d {
+  width: 200px;
+  height: 120px;
+  background: #16161d;
+  border: 2px solid #555555;
+  border-radius: 8px;
+  position: relative;
+  transform-style: preserve-3d;
+  will-change: transform;
+  transition: transform 0.2s ease-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow: 
+    0 4px 20px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.card-3d::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    transparent 50%,
+    rgba(0, 0, 0, 0.1) 100%
+  );
+  border-radius: 6px;
+  pointer-events: none;
+}
+
+.card-3d::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  right: 2px;
+  bottom: 2px;
+  background: linear-gradient(
+    45deg,
+    rgba(85, 85, 85, 0.3) 0%,
+    transparent 30%,
+    transparent 70%,
+    rgba(85, 85, 85, 0.3) 100%
+  );
+  border-radius: 6px;
+  pointer-events: none;
+}
+
+.card-3d-title {
+  color: #fff;
+  position: relative;
+  z-index: 10;
+  transition: transform 0.2s ease-out;
+  font: 700 1.2rem 'Courier New', monospace;
+  text-shadow: 
+    -1px -1px 0 #000,  
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    1px 1px 0 #000,
+    0 0 10px rgba(255, 255, 255, 0.3);
+  letter-spacing: 1px;
+  text-align: center;
+}
+
+/* ホバー時の基本エフェクト */
+.card-3d-container:hover .card-3d {
+  border-color: #777777;
+  box-shadow: 
+    0 8px 30px rgba(0, 0, 0, 0.4),
+    inset 0 2px 0 rgba(255, 255, 255, 0.15),
+    0 0 20px rgba(85, 85, 85, 0.3);
+}
+
+.card-3d-container:hover .card-3d-title {
+  transform: translateZ(30px);
+  text-shadow: 
+    -1px -1px 0 #000,  
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    1px 1px 0 #000,
+    0 0 15px rgba(255, 255, 255, 0.5),
+    0 0 25px rgba(255, 255, 255, 0.2);
+}
+
+/* 動的ライティング効果 */
+.card-3d::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(
+    circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.05) 30%,
+    transparent 70%
+  );
+  border-radius: 6px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.card-3d-container:hover .card-3d::after {
+  opacity: 1;
+}
+
+/* 深度に応じたブラー効果 */
+.card-3d.depth-1 {
+  filter: blur(0.5px);
+}
+
+.card-3d.depth-2 {
+  filter: blur(1px);
+}
+
+.card-3d.depth-3 {
+  filter: blur(1.5px);
+}
+
+/* アクティブ状態 */
+.card-3d-container:active .card-3d {
+  transition: transform 0.1s ease-out;
+  transform: translateZ(5px) scale(0.98);
+}
+
+/* フォーカス状態 */
+.card-3d-container:focus {
+  outline: none;
+}
+
+.card-3d-container:focus .card-3d {
+  border-color: #888888;
+  box-shadow: 
+    0 8px 30px rgba(0, 0, 0, 0.4),
+    inset 0 2px 0 rgba(255, 255, 255, 0.15),
+    0 0 0 3px rgba(255, 255, 255, 0.1);
+}
+
+/* グリッド効果（オプション） */
+.card-3d-grid::before {
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .card-3d {
+    width: 160px;
+    height: 100px;
+  }
+  
+  .card-3d-title {
+    font-size: 1rem;
+  }
+}
+
+/* アニメーション用のクラス */
+.card-3d.animate-tilt {
+  transition: transform 0.15s ease-out, filter 0.15s ease-out;
+}
+
+/* マウスリーブ時の滑らかな復帰アニメーション */
+.card-3d.returning-to-neutral {
+  transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94), 
+              filter 0.6s ease-out,
+              box-shadow 0.6s ease-out;
+}
+
+/* より滑らかなイージング用のカスタムクラス */
+.card-3d.smooth-reset {
+  animation: smooth-return 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes smooth-return {
+  0% {
+    transform: var(--current-transform, translateZ(10px) rotateX(0deg) rotateY(0deg));
+  }
+  100% {
+    transform: translateZ(0px) rotateX(0deg) rotateY(0deg);
+  }
+}
+
+/* 特別なテーマバリエーション */
+.card-3d.theme-dark {
+  background: #0a0a0f;
+  border-color: #333333;
+}
+
+.card-3d.theme-blue {
+  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+  border-color: #3b82f6;
+}
+
+.card-3d.theme-green {
+  background: linear-gradient(135deg, #064e3b 0%, #065f46 100%);
+  border-color: #10b981;
+}
+
+.card-3d.theme-purple {
+  background: linear-gradient(135deg, #581c87 0%, #6b21a8 100%);
+  border-color: #a855f7;
+}

@@ -32,6 +32,7 @@ interface RightSidebarProps {
   onClose: () => void;
   onNavigateToLearning?: () => void;
   onNavigateToPractice?: () => void;
+  onNavigateToPracticeTwo?: () => void;
 }
 
 export const RightSidebar: React.FC<RightSidebarProps> = ({
@@ -40,6 +41,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
   onClose,
   onNavigateToLearning,
   onNavigateToPractice,
+  onNavigateToPracticeTwo,
 }) => {
   const [darkMode, setDarkMode] = React.useState(false);
   const [autoSave, setAutoSave] = React.useState(true);
@@ -85,6 +87,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
       section: '学習',
       items: [
         { icon: <CodeIcon />, text: '練習用ページ', badge: null, action: 'practice' },
+        { icon: <CodeIcon />, text: '練習用ページ 2', badge: 'NEW', action: 'practice2' },
         { icon: <SettingsIcon />, text: 'React & CSS 学習', badge: 'NEW', action: 'learning' },
       ],
     },
@@ -194,6 +197,8 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                         onNavigateToLearning();
                       } else if (item.action === 'practice' && onNavigateToPractice) {
                         onNavigateToPractice();
+                      } else if (item.action === 'practice2' && onNavigateToPracticeTwo) {
+                        onNavigateToPracticeTwo();
                       }
                     }}
                   >

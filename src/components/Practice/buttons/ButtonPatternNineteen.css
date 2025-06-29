@@ -1,0 +1,179 @@
+/* カーソル追従型3D浮遊テキストボタン */
+
+.card-3d-magnet-container {
+  perspective: 500px;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.card-3d-magnet {
+  width: 180px;
+  height: 180px;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #1a1a2e 100%);
+  border: 2px solid #4a90e2;
+  border-radius: 12px;
+  position: relative;
+  transform-style: preserve-3d;
+  will-change: transform;
+  transition: transform 0.2s ease-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* カードの多層背景効果 */
+.card-3d-magnet::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(74, 144, 226, 0.1) 0%,
+    transparent 30%,
+    transparent 70%,
+    rgba(74, 144, 226, 0.05) 100%
+  );
+  border-radius: 10px;
+  pointer-events: none;
+}
+
+/* エレクトリック効果 */
+.card-3d-magnet::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  right: 2px;
+  bottom: 2px;
+  background: 
+    radial-gradient(circle at 20% 20%, rgba(74, 144, 226, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(74, 144, 226, 0.08) 0%, transparent 50%);
+  border-radius: 10px;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+/* 磁力的に引き寄せられるテキスト（軽量化版） */
+.card-3d-magnet-title {
+  color: #4a90e2;
+  position: relative;
+  z-index: 10;
+  transform: translateX(0) translateY(0) translateZ(0);
+  transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  font: 700 1.3rem 'Courier New', monospace;
+  letter-spacing: 1.5px;
+  text-align: center;
+  text-transform: uppercase;
+  user-select: none;
+}
+
+/* ホバー時のカード効果（軽量化） */
+.card-3d-magnet-container:hover .card-3d-magnet {
+  border-color: #5ba0f2;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(135deg, #1e1e3f 0%, #1a2547 50%, #1e1e3f 100%);
+}
+
+.card-3d-magnet-container:hover .card-3d-magnet::after {
+  opacity: 1;
+  background: 
+    radial-gradient(circle at 30% 30%, rgba(74, 144, 226, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 70% 70%, rgba(74, 144, 226, 0.12) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(74, 144, 226, 0.08) 0%, transparent 60%);
+}
+
+/* アクティブ状態 */
+.card-3d-magnet-container:active .card-3d-magnet {
+  transition: transform 0.1s ease-out;
+  transform: translateZ(5px) scale(0.98);
+}
+
+.card-3d-magnet-container:active .card-3d-magnet-title {
+  transform: translateX(0) translateY(0) translateZ(25px);
+}
+
+/* フォーカス状態 */
+.card-3d-magnet-container:focus {
+  outline: none;
+}
+
+.card-3d-magnet-container:focus .card-3d-magnet {
+  border-color: #6bb0ff;
+  box-shadow: 
+    0 12px 40px rgba(0, 0, 0, 0.3),
+    inset 0 2px 0 rgba(255, 255, 255, 0.15);
+}
+
+/* インタラクティブ状態の管理 */
+.card-3d-magnet.animate-tilt {
+  transition: transform 0.15s ease-out, filter 0.15s ease-out;
+}
+
+.card-3d-magnet.animate-tilt .card-3d-magnet-title {
+  transition: transform 0.1s ease-out, filter 0.1s ease-out;
+}
+
+/* マウスリーブ時の滑らかな復帰 */
+.card-3d-magnet.returning-to-neutral {
+  transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94), 
+              box-shadow 0.6s ease-out;
+}
+
+.card-3d-magnet.returning-to-neutral .card-3d-magnet-title {
+  transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* 軽量化：重いエフェクトを削除 */
+
+/* パフォーマンス最適化 */
+.card-3d-magnet-title {
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 個別文字の磁力効果（軽量化 + なめらかな動き） */
+.magnetic-char {
+  will-change: transform;
+  transform-origin: center center;
+  transition: transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .card-3d-magnet {
+    width: 140px;
+    height: 140px;
+  }
+  
+  .card-3d-magnet-title {
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+  }
+}
+
+/* 特別なテーマバリエーション（軽量化版 - エミッシブ効果なし） */
+.card-3d-magnet.theme-plasma {
+  background: linear-gradient(135deg, #2d1b69 0%, #11998e 100%);
+  border-color: #38ef7d;
+}
+
+.card-3d-magnet.theme-plasma .card-3d-magnet-title {
+  color: #38ef7d;
+}
+
+.card-3d-magnet.theme-cosmic {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: #f093fb;
+}
+
+.card-3d-magnet.theme-cosmic .card-3d-magnet-title {
+  color: #f093fb;
+}

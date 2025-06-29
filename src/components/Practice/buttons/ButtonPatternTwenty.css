@@ -1,0 +1,236 @@
+/* 正方形3D インセットカード - 深度埋め込みテキスト効果 */
+
+/* パターン20: 文字がボタンの奥にあるスタイリッシュなデザイン */
+
+.card-3d-inset-container {
+  perspective: 500px;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.card-3d-inset {
+  width: 180px;
+  height: 180px;
+  background: linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f0f1f 100%);
+  border: 3px solid #333;
+  border-radius: 12px;
+  position: relative;
+  transform-style: preserve-3d;
+  will-change: transform;
+  transition: transform 0.2s ease-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  /* 深い凹み効果 */
+  box-shadow: 
+    inset 8px 8px 16px rgba(0, 0, 0, 0.8),
+    inset -4px -4px 8px rgba(255, 255, 255, 0.05),
+    0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* 深い凹みの内側効果 */
+.card-3d-inset::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  background: linear-gradient(
+    145deg,
+    rgba(0, 0, 0, 0.3) 0%,
+    rgba(255, 255, 255, 0.02) 50%,
+    rgba(0, 0, 0, 0.5) 100%
+  );
+  border-radius: 8px;
+  pointer-events: none;
+}
+
+/* 内側のテクスチャ効果 */
+.card-3d-inset::after {
+  content: '';
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  background: 
+    radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 70% 70%, rgba(0, 0, 0, 0.2) 0%, transparent 50%);
+  border-radius: 6px;
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+/* 奥に埋め込まれたテキスト - スタイリッシュな深度効果 */
+.card-3d-inset-title {
+  color: #8892b0;
+  position: relative;
+  z-index: 5;
+  transform: translateY(0) translateZ(-30px); /* 初期状態で奥に配置 */
+  transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  font: 600 1.2rem 'Segoe UI', 'Helvetica Neue', monospace;
+  /* 奥に沈んだ効果のテキストシャドウ */
+  text-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.8),
+    0 4px 8px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  letter-spacing: 2px;
+  text-align: center;
+  text-transform: uppercase;
+  user-select: none;
+  /* 奥行き感を強調するフィルター */
+  filter: brightness(0.7) contrast(1.2);
+}
+
+/* ホバー時のカード効果 - より深い凹み */
+.card-3d-inset-container:hover .card-3d-inset {
+  border-color: #444;
+  /* より深い凹み効果を強調 */
+  box-shadow: 
+    inset 12px 12px 24px rgba(0, 0, 0, 0.9),
+    inset -6px -6px 12px rgba(255, 255, 255, 0.08),
+    0 8px 30px rgba(0, 0, 0, 0.5);
+  background: linear-gradient(
+    145deg,
+    #1e1e3f 0%,
+    #1a2547 50%,
+    #0f0f1f 100%
+  );
+}
+
+/* ホバー時のテキスト効果 - 奥から浮かび上がる効果 */
+.card-3d-inset-container:hover .card-3d-inset-title {
+  color: #a8b2d1;
+  /* より明るく、より鮮明に */
+  text-shadow: 
+    0 1px 2px rgba(0, 0, 0, 0.9),
+    0 2px 4px rgba(0, 0, 0, 0.7),
+    0 4px 8px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  filter: brightness(1.1) contrast(1.3);
+}
+
+/* アクティブ状態 */
+.card-3d-inset-container:active .card-3d-inset {
+  transition: transform 0.1s ease-out;
+  transform: translateZ(5px) scale(0.98);
+}
+
+.card-3d-inset-container:active .card-3d-inset-title {
+  transform: translateY(-6px) translateZ(40px);
+}
+
+/* フォーカス状態 */
+.card-3d-inset-container:focus {
+  outline: none;
+}
+
+.card-3d-inset-container:focus .card-3d-inset {
+  border-color: #888888;
+  box-shadow: 
+    0 12px 40px rgba(0, 0, 0, 0.4),
+    inset 0 2px 0 rgba(255, 255, 255, 0.15),
+    0 0 0 3px rgba(255, 255, 255, 0.1);
+}
+
+/* インタラクティブ状態の管理 */
+.card-3d-inset.animate-tilt {
+  transition: transform 0.15s ease-out, filter 0.15s ease-out;
+}
+
+.card-3d-inset.animate-tilt .card-3d-inset-title {
+  transition: transform 0.15s ease-out;
+}
+
+/* マウスリーブ時の滑らかな復帰 */
+.card-3d-inset.returning-to-neutral {
+  transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94), 
+              filter 0.6s ease-out,
+              box-shadow 0.6s ease-out;
+}
+
+.card-3d-inset.returning-to-neutral .card-3d-inset-title {
+  transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* 動的ライティング効果 */
+.card-3d-inset .lighting-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(
+    circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.04) 30%,
+    transparent 70%
+  );
+  border-radius: 6px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 1;
+}
+
+.card-3d-inset-container:hover .card-3d-inset .lighting-overlay {
+  opacity: 1;
+}
+
+/* 追加のビジュアル強化 */
+.card-3d-inset-container:hover .card-3d-inset::after {
+  opacity: 0.8;
+  background-size: 25px 25px;
+}
+
+/* パフォーマンス最適化 */
+.card-3d-inset-title {
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .card-3d-inset {
+    width: 140px;
+    height: 140px;
+  }
+  
+  .card-3d-inset-title {
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+  }
+  
+  .card-3d-inset-container:hover .card-3d-inset-title {
+    transform: translateY(-6px) translateZ(35px);
+  }
+}
+
+/* 特別なテーマバリエーション */
+.card-3d-inset.theme-electric {
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+  border-color: #6366f1;
+}
+
+.card-3d-inset.theme-electric:hover {
+  box-shadow: 
+    0 12px 40px rgba(99, 102, 241, 0.3),
+    inset 0 2px 0 rgba(255, 255, 255, 0.15),
+    0 0 25px rgba(99, 102, 241, 0.4);
+}
+
+.card-3d-inset.theme-neon {
+  background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+  border-color: #00ff88;
+}
+
+.card-3d-inset.theme-neon .card-3d-inset-title {
+  color: #00ff88;
+  text-shadow: 
+    0 0 10px #00ff88,
+    0 0 20px #00ff88,
+    0 0 30px rgba(0, 255, 136, 0.5);
+}

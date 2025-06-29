@@ -1,5 +1,6 @@
 import React from 'react';
-import { Box } from '@mui/material';
+import { Box, Button } from '@mui/material';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { 
   BackToMainButton, 
   ButtonPatternOne, 
@@ -32,24 +33,15 @@ import {
   ButtonPatternTwentyEight,
   ButtonPatternTwentyNine,
   ButtonPatternThirty,
-  ButtonPatternThirtyOne,
-  ButtonPatternThirtyTwo,
-  ButtonPatternThirtyThree,
-  ButtonPatternThirtyFour,
-  ButtonPatternThirtyFive,
-  ButtonPatternThirtySix,
-  ButtonPatternThirtySeven,
-  ButtonPatternThirtyEight,
-  ButtonPatternThirtyNine,
-  ButtonPatternForty
 } from './buttons';
 import './PracticePage.css';
 
 interface PracticePageProps {
   onBackToMain?: () => void;
+  onNavigateToPracticeTwo?: () => void;
 }
 
-const PracticePage: React.FC<PracticePageProps> = ({ onBackToMain }) => {
+const PracticePage: React.FC<PracticePageProps> = ({ onBackToMain, onNavigateToPracticeTwo }) => {
   const handleAddClick = () => {
     console.log('新規追加ボタンがクリックされました！');
     // ここに必要に応じて処理を追加
@@ -67,6 +59,43 @@ const PracticePage: React.FC<PracticePageProps> = ({ onBackToMain }) => {
     }}>
       {/* メインに戻るボタン（固定位置） */}
       <BackToMainButton onClick={onBackToMain} />
+      
+      {/* 練習ページ2へボタン（固定位置） */}
+      <Button
+        variant="contained"
+        endIcon={<ArrowForwardIcon />}
+        onClick={onNavigateToPracticeTwo}
+        sx={{
+          position: 'absolute',
+          top: 16,
+          right: 16,
+          zIndex: 1000,
+          backgroundColor: '#673ab7',
+          color: 'white',
+          fontWeight: 500,
+          borderRadius: '8px',
+          padding: '8px 16px',
+          textTransform: 'none',
+          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
+          transition: 'all 0.3s ease',
+          width: '170px',
+          height: '40px',
+          minWidth: '170px',
+          '&:hover': {
+            backgroundColor: '#5e35b1',
+            transform: 'translateY(-10px)',
+            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.3)',
+          },
+          '&:active': {
+            transform: 'translateY(0)',
+          },
+          '&:focus': {
+            outline: 'none',
+          },
+        }}
+      >
+        練習ページ 2 へ
+      </Button>
 
       {/* レスポンシブボタンエリア */}
       <Box sx={{ 
@@ -110,16 +139,6 @@ const PracticePage: React.FC<PracticePageProps> = ({ onBackToMain }) => {
         <ButtonPatternTwentyEight onClick={handleAddClick} />
         <ButtonPatternTwentyNine onClick={handleAddClick} />
         <ButtonPatternThirty onClick={handleAddClick} />
-        <ButtonPatternThirtyOne onClick={handleAddClick} />
-        <ButtonPatternThirtyTwo onClick={handleAddClick} />
-        <ButtonPatternThirtyThree onClick={handleAddClick} />
-        <ButtonPatternThirtyFour onClick={handleAddClick} />
-        <ButtonPatternThirtyFive onClick={handleAddClick} />
-        <ButtonPatternThirtySix onClick={handleAddClick} />
-        <ButtonPatternThirtySeven onClick={handleAddClick} />
-        <ButtonPatternThirtyEight onClick={handleAddClick} />
-        <ButtonPatternThirtyNine onClick={handleAddClick} />
-        <ButtonPatternForty onClick={handleAddClick} />
       </Box>
 
       {/* 空白のメインエリア - 学習用 */}

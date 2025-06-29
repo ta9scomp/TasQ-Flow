@@ -14,6 +14,7 @@ import { ProjectSettingsTab } from './components/ProjectSettings/ProjectSettings
 import { RightSidebar } from './components/Layout/RightSidebar';
 import { LearningPage } from './components/Learning/LearningPage';
 import PracticePage from './components/Practice/PracticePage';
+import PracticePageTwo from './components/Practice/PracticePageTwo';
 import { MockRealtimeProvider, useRealtime } from './contexts/RealtimeContext';
 import { ConflictResolutionDialog } from './components/Realtime/ConflictResolutionDialog';
 import { TaskSyncManager } from './components/Sync/TaskSyncManager';
@@ -176,6 +177,7 @@ function AppContent() {
   const [rightSidebarOpen, setRightSidebarOpen] = React.useState(false);
   const [showLearningPage, setShowLearningPage] = React.useState(false);
   const [showPracticePage, setShowPracticePage] = React.useState(false);
+  const [showPracticePageTwo, setShowPracticePageTwo] = React.useState(false);
   
   // リアルタイム機能の利用
   const { conflicts, broadcastTaskUpdate, broadcastTaskCreate } = useRealtime();
@@ -378,7 +380,23 @@ function AppContent() {
     return (
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <PracticePage onBackToMain={handleBackToChart} />
+        <PracticePage 
+          onBackToMain={handleBackToChart} 
+          onNavigateToPracticeTwo={() => {
+            setShowPracticePage(false);
+            setShowPracticePageTwo(true);
+          }}
+        />
+      </ThemeProvider>
+    );
+  }
+
+  // 練習ページ2表示時は専用レイアウト
+  if (showPracticePageTwo) {
+    return (
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <PracticePageTwo onBack={() => setShowPracticePageTwo(false)} />
       </ThemeProvider>
     );
   }
@@ -486,6 +504,7 @@ function AppContent() {
           onClose={() => setRightSidebarOpen(false)}
           onNavigateToLearning={handleNavigateToLearning}
           onNavigateToPractice={handleNavigateToPractice}
+          onNavigateToPracticeTwo={() => setShowPracticePageTwo(true)}
         />
         </Box>
       </TaskSyncManager>
